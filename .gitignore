@@ -18,3 +18,5 @@ Thumbs.db
 .env
 
 backend/.env
+*.db
+zapiiii.txt
