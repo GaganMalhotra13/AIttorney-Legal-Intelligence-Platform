@@ -148,8 +148,10 @@ export default function HomeDashboard() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden rounded-3xl bg-navy-900 p-8 text-white"
-      >
+      className="relative overflow-hidden rounded-3xl p-8 text-white"
+      style={{
+        background: "linear-gradient(135deg, #5f5a80 0%, #393281 100%)",
+      }}      >
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-[0.04]"
           style={{

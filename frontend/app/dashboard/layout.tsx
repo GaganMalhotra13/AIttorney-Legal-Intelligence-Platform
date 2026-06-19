@@ -5,28 +5,33 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import {
-  Scale, Landmark, FileText, PenLine, Map,
-  History, LogOut, ChevronRight, LayoutDashboard,
-  BarChart2, FolderOpen, Calendar, Shield
+   Scale, Landmark, FileText, PenLine, Map,
+  History, LogOut, ChevronRight, ChevronDown, LayoutDashboard,
+  BarChart2, FolderOpen, Calendar, AlertTriangle, Users, Shield
 } from "lucide-react";
 
-const NAV = [
-  { href: "/dashboard/home",           icon: LayoutDashboard, label: "Home",           group: "main"  },
-  { href: "/dashboard/case-mirror",    icon: Landmark,        label: "Case Mirror",    group: "main"  },
-  { href: "/dashboard/contract-audit", icon: FileText,        label: "Contract Audit", group: "main"  },
-  { href: "/dashboard/notice-drafter", icon: PenLine,         label: "Notice Drafter", group: "main"  },
-  { href: "/dashboard/roadmap",        icon: Map,             label: "Legal Roadmap",  group: "main"  },
-  { href: "/dashboard/document-vault", icon: FolderOpen,      label: "Document Vault", group: "tools" },
-  { href: "/dashboard/case-tracker",   icon: Calendar,        label: "Case Tracker",   group: "tools" },
-  { href: "/dashboard/analytics",      icon: BarChart2,       label: "Analytics",      group: "tools" },
-  { href: "/dashboard/history",        icon: History,         label: "History",        group: "tools" },
+const NAV_CORE = [
+  { href: "/dashboard/home",           icon: LayoutDashboard, label: "Home"            },
+  { href: "/dashboard/case-mirror",    icon: Landmark,        label: "Case Mirror"     },
+  { href: "/dashboard/contract-audit", icon: FileText,        label: "Contract Audit"  },
+  { href: "/dashboard/notice-drafter", icon: PenLine,         label: "Notice Drafter"  },
+  { href: "/dashboard/roadmap",        icon: Map,             label: "Legal Roadmap"   },
+    { href: "/dashboard/advocate-finder", icon: Users,       label: "Find Advocate"   },
+
+];
+
+const NAV_TOOLS = [
+  { href: "/dashboard/document-vault", icon: FolderOpen,  label: "Document Vault" },
+  { href: "/dashboard/case-tracker",   icon: Calendar,    label: "Case Tracker"   },
+  { href: "/dashboard/analytics",      icon: BarChart2,   label: "Analytics"      },
+  { href: "/dashboard/history",        icon: History,     label: "History"        },
 ];
 
 const STATUS = [
-  { label: "Gemini API",       live: true },
-  { label: "18-Source Search", live: true },
-  { label: "11 AI Modules",    live: true },
-  { label: "FastAPI Backend",  live: true },
+  { label: "Gemini API",        live: true  },
+  { label: "18-Source Search",  live: true  },
+  { label: "11 AI Modules",     live: true  },
+  { label: "FastAPI Backend",   live: true  },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -34,21 +39,61 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router   = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+
+
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem("token")) {
-      router.push("/");
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    router.replace("/");
+    return;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const expired = payload.exp * 1000 < Date.now();
+    if (expired) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
+      router.replace("/");
+      return;
     }
-    if (pathname === "/dashboard") router.replace("/dashboard/home");
-  }, [pathname]);
+  } catch {
+    localStorage.removeItem("token");
+    router.replace("/");
+    return;
+  }
+
+  if (pathname === "/dashboard") {
+    router.replace("/dashboard/home");
+  }
+
+  setAuthChecked(true);
+}, [pathname]);
+
+// Don't render anything until auth is verified
+if (!authChecked || !user) return (
+  <div className="flex h-screen items-center justify-center bg-ivory">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center">
+        <Scale className="w-4 h-4 text-white" />
+      </div>
+      <p className="text-sm text-ink-400 font-mono">Verifying session…</p>
+    </div>
+  </div>
+);
 
   if (!user) return null;
 
   const initials = user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
-  const mainNav  = NAV.filter((n) => n.group === "main");
-  const toolsNav = NAV.filter((n) => n.group === "tools");
+  const mainNav  = NAV_CORE;
+  const toolsNav = NAV_TOOLS;
 
-  const NavItem = ({ href, icon: Icon, label }: typeof NAV[0]) => {
+  type NavItemProps = (typeof NAV_CORE)[number];
+  const NavItem = ({ href, icon: Icon, label }: NavItemProps) => {
     const active = pathname === href || (href !== "/dashboard/home" && pathname.startsWith(href));
     return (
       <Link href={href}>
@@ -122,22 +167,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Status */}
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="px-4 py-3 border-t border-slate-100">
-              <p className="label mb-2">System Status</p>
-              <div className="space-y-1.5">
-                {STATUS.map(({ label, live }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${live ? "bg-teal-400 animate-pulse" : "bg-slate-300"}`} />
-                    <span className="font-mono text-[10px] text-slate-400">{label}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Status dots — now collapsible */}
+<AnimatePresence>
+  {!collapsed && (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="border-t border-ink-100/50"
+    >
+      <button
+        onClick={() => setStatusOpen(!statusOpen)}
+        className="w-full px-4 py-3 flex items-center justify-between
+                   hover:bg-ink-50/50 transition-colors"
+      >
+        <p className="label mb-0">System</p>
+        <motion.div animate={{ rotate: statusOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="w-3.5 h-3.5 text-ink-300" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {statusOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-3 space-y-1.5">
+              {STATUS.map(({ label, live }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      live ? "bg-sage-500" : "bg-ink-300"
+                    }`}
+                    style={live ? { animation: "pulseLive 2.4s ease-in-out infinite" } : {}}
+                  />
+                  <span className="font-mono text-[10px] text-ink-300">{label}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )}
+</AnimatePresence>
 
         {/* User */}
         <div className="p-3 border-t border-slate-100">

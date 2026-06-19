@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { authAPI } from "@/lib/api";
@@ -24,26 +24,45 @@ export default function LoginPage() {
   const setUser = useStore((s) => s.setUser);
   const router  = useRouter();
 
+  // Autofill demo password ONLY when demo email is typed —
+  // does not block or restrict any other email
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setEmail(val);
-    setPassword(val === DEMO_EMAIL ? DEMO_PASSWORD : "");
+    if (val === DEMO_EMAIL) {
+      setPassword(DEMO_PASSWORD);
+    }
   };
 
   const handleLogin = async () => {
-    if (email !== DEMO_EMAIL) { toast.error(`Demo only: use ${DEMO_EMAIL}`); return; }
+    if (!email.trim())    { toast.error("Enter your email"); return; }
+    if (!password.trim()) { toast.error("Enter your password"); return; }
+
     setLoading(true);
     try {
       const { data } = await authAPI.login(email, password);
-      localStorage.setItem("token",         data.access_token  || data.token  || "");
+      localStorage.setItem("token",         data.access_token  || "");
       localStorage.setItem("refresh_token", data.refresh_token || "");
-      setUser({ email: data.user?.email || data.email, name: data.user?.name || data.name, token: data.access_token || data.token });
-      toast.success(`Welcome, ${(data.user?.name || data.name || "").split(" ")[0]}!`);
+      setUser({
+        email: data.user?.email || email,
+        name:  data.user?.name  || "",
+        token: data.access_token,
+      });
+      toast.success(`Welcome, ${(data.user?.name || "").split(" ")[0]}!`);
       router.push("/dashboard/home");
     } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Login failed");
-    } finally { setLoading(false); }
+      toast.error(e.response?.data?.detail || "Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.replace("/dashboard/home");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-bg flex">
@@ -95,24 +114,35 @@ export default function LoginPage() {
             <p className="text-slate-500 text-sm">Sign in to your workspace to continue your legal research.</p>
           </div>
 
+          {/* Demo credentials — informational only, not a restriction */}
           <div className="mb-6 p-4 rounded-xl bg-coral-50 border border-coral-100">
-            <p className="text-xs text-coral-700 font-semibold mb-1">Demo Credentials</p>
+            <p className="text-xs text-coral-700 font-semibold mb-1">Try the demo</p>
             <p className="font-mono text-xs text-coral-600">{DEMO_EMAIL}</p>
-            <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type this email ↑</p>
+            <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type this email ↑ — or sign in with your own account.</p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="label">Email Address</label>
-              <input type="email" value={email} onChange={handleEmailChange} placeholder={`Enter: ${DEMO_EMAIL}`} className="input" onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="you@example.com"
+                className="input"
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />
             </div>
             <div>
               <label className="label">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder={email === DEMO_EMAIL ? "Auto-filled ✓" : "Enter password"}
-                readOnly={email === DEMO_EMAIL}
-                className={`input ${email === DEMO_EMAIL ? "bg-teal-50 border-teal-200 text-teal-700 cursor-default" : ""}`}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                className="input"
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />
             </div>
             <motion.button onClick={handleLogin} disabled={loading} whileHover={{ scale: 1.01, y: -1 }} whileTap={{ scale: 0.99 }}
               className="btn-primary w-full py-3 text-base disabled:opacity-60 disabled:cursor-not-allowed">
@@ -121,6 +151,14 @@ export default function LoginPage() {
                 : "Enter Workspace →"}
             </motion.button>
           </div>
+
+          <p className="text-center text-sm text-slate-400 mt-4">
+            Don't have an account?{" "}
+            <a href="/signup" className="text-coral-600 font-medium hover:underline">
+              Create one
+            </a>
+          </p>
+
           <p className="text-center text-slate-400 text-xs mt-6 font-mono">Educational use only · Not legal advice</p>
         </motion.div>
       </div>

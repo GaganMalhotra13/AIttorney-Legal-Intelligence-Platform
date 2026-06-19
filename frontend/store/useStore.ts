@@ -52,11 +52,38 @@ export const useStore = create<AppStore>()(
     (set) => ({
       user:       null,
       setUser:    (user) => set({ user }),
-      logout:     () => {
-        if (typeof window !== "undefined") localStorage.removeItem("token");
-        set({ user: null, caseResult: null, moduleResults: {}, liveContext: "" });
-      },
+     logout: () => {
+  // Revoke refresh token on backend
+  const refreshToken = typeof window !== "undefined"
+    ? localStorage.getItem("refresh_token") : null;
 
+  if (refreshToken) {
+    // Fire and forget — don't await
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }).catch(() => {});
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+  }
+
+  set({
+    user:          null,
+    caseResult:    null,
+    liveContext:   "",
+    caseQuery:     "",
+    moduleResults: {},
+    activeModule:  "opponent",
+  });
+
+  if (typeof window !== "undefined") {
+    window.location.href = "/";
+  }
+},
       caseResult:    null,
       setCaseResult: (caseResult) => set({ caseResult }),
       liveContext:   "",

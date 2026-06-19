@@ -16,33 +16,29 @@ def _safe(prompt: str) -> str:
     except Exception as e:
         return f"❌ API Error: {e}"
 
-def analyze_case(
+def analyze_case_full(
     query: str,
     live_context: str,
     language: str,
     landmarks: list[dict] | None = None,
-) -> str:
-    """
-    Core case analysis. Now receives landmark judgments separately
-    so they get special treatment in the prompt — not just mixed
-    into the context soup.
-    """
+) -> dict:
+    """Single Gemini call returning both laws and analysis."""
     landmark_block = ""
     if landmarks:
-        landmark_block = "\n\nLANDMARK PRECEDENTS (cite these specifically):\n"
+        landmark_block = "\n\nLANDMARK PRECEDENTS:\n"
         for lm in landmarks[:3]:
             landmark_block += (
-                f"• {lm.get('title','Unknown')} "
+                f"- {lm.get('title','Unknown')} "
                 f"({lm.get('court','')}, {lm.get('date','')})"
-                f" — Citations: {lm.get('citations',0)}\n"
+                f" Citations: {lm.get('citations',0)}\n"
                 f"  {lm.get('snippet','')[:200]}\n"
             )
 
-    return _safe(f"""
-You are an educational legal assistant for India. Be specific, direct, genuinely useful.
+    result = _safe(f"""
+You are an educational legal assistant for India.
 Language: {language}
 
-Compressed search context (verified sources):
+Search context:
 {live_context}
 {landmark_block}
 
@@ -50,43 +46,45 @@ User situation: {query}
 
 Respond with EXACTLY this structure:
 
+LAWS:
+- [Act Name, Year] Section [X] - [what it covers]
+- [Act Name, Year] Section [X] - [what it covers]
+- [Act Name, Year] Section [X] - [what it covers]
+
+ANALYSIS:
 ### Summary
 2-3 sentences on what this legally is.
 
 ### Your Legal Position
-Is this strong or weak and specifically why? Reference actual case law if found above.
-
-### Applicable Laws
-3-5 sections with one-line explanations. Be specific — cite exact section numbers.
+Strong or weak and specifically why.
 
 ### Landmark Cases That Apply
-If landmark cases were found above, name them and explain WHY they help or hurt your case.
-If none found, say "No directly applicable landmarks found — see general precedents."
+Name relevant cases or say none found.
 
-### What You Should Do — In Order
-1. [Most urgent action — within days]
+### What You Should Do
+1. [Most urgent action]
 2. [Second action]
 3. [Third action]
 4. [Final step]
 
 ### Realistic Expectation
-Timeline, likely cost range, probable outcome. Be honest — don't over-promise.
+Timeline, cost, probable outcome.
 
-End with: "This is educational information. Consult a licensed advocate before taking action."
+Educational information only. Consult a licensed advocate.
 """)
 
+    # Split laws and analysis
+    laws = ""
+    analysis = ""
+    if "ANALYSIS:" in result:
+        parts = result.split("ANALYSIS:", 1)
+        laws_raw = parts[0].replace("LAWS:", "").strip()
+        laws = laws_raw
+        analysis = parts[1].strip()
+    else:
+        analysis = result
 
-def get_applicable_laws(query: str) -> str:
-    return _safe(f"""
-Indian legal situation: "{query}"
-
-List 3-5 directly applicable laws/sections:
-• [Act Name, Year] Section [X] — [exactly what it covers and why it applies here]
-
-Specific only. No padding. Include the year of the Act.
-Examples: Consumer Protection Act 2019 §35, NI Act 1881 §138, IPC §420, RERA 2016 §18
-""")
-
+    return {"laws": laws, "analysis": analysis}
 
 def get_similar_cases(query: str, context: str) -> str:
     return _safe(f"""

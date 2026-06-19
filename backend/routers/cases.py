@@ -6,12 +6,28 @@ from database import cases_col
 from datetime import datetime
 from bson import ObjectId
 import sys, os
+import hashlib
+import time
 
+# Simple in-memory cache — survives for server lifetime
+_cache: dict = {}
+_CACHE_TTL = 1800  # 30 minutes
+
+def _cache_get(key: str):
+    if key in _cache:
+        data, ts = _cache[key]
+        if time.time() - ts < _CACHE_TTL:
+            return data
+        del _cache[key]
+    return None
+
+def _cache_set(key: str, data: dict):
+    _cache[key] = (data, time.time())
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT not in sys.path: sys.path.insert(0, ROOT)
 
 from utils.search import get_live_cases
-from utils.ai import analyze_case, get_applicable_laws
+from utils.ai import  analyze_case_full
 from utils.scoring import compute_win_probability
 from utils.anonymize import anonymize
 
@@ -26,8 +42,9 @@ async def analyze(body: CaseRequest, user=Depends(get_current_user)):
     live_ctx, raw_results, landmarks = get_live_cases(safe_query)
 
     score_data = compute_win_probability(safe_query, live_ctx)
-    laws       = get_applicable_laws(safe_query)
-    analysis   = analyze_case(safe_query, live_ctx, body.language or "English")
+    result   = analyze_case_full(safe_query, live_ctx, body.language or "English", landmarks)
+    laws     = result["laws"]
+    analysis = result["analysis"]
 
     await cases_col.insert_one({
         "username":   user["email"],

@@ -1,17 +1,18 @@
 """
 utils/search.py — AIttorney v7
 Upgraded pipeline:
-  1. DuckDuckGo multi-strategy (18 sources, 5 strategies) — existing
-  2. IndianKanoon direct scrape via ScraperAPI — NEW
-  3. Cohere reranking — NEW
-  4. Groq compression — NEW
-  5. Landmark judgment extraction — NEW
+  1. DuckDuckGo multi-strategy (18 sources, 5 strategies) — PARALLELIZED
+  2. IndianKanoon direct scrape via ScraperAPI
+  3. Cohere reranking
+  4. Groq compression
+  5. Landmark judgment extraction
 
 Result: Gemini gets real judgment text, ranked by relevance,
-compressed to fit cleanly in context. 10x better than snippets.
+compressed to fit cleanly in context.
 """
 from duckduckgo_search import DDGS
 from config import MAX_SEARCH_RESULTS
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
 # New utils — import with graceful fallback
@@ -34,7 +35,7 @@ except ImportError:
     GROQ_AVAILABLE = False
 
 
-# ── Source registry (unchanged from v6) ──────────────────────
+# ── Source registry (unchanged) ──────────────────────────────
 LEGAL_SOURCES = [
     ("indiankanoon.org",          3, "case_law"),
     ("livelaw.in",                3, "news_judgment"),
@@ -53,8 +54,8 @@ LEGAL_SOURCES = [
     ("legalserviceindia.com",     1, "legal_help"),
 ]
 
-_TOP  = " OR ".join(f"site:{d}" for d,t,_ in LEGAL_SOURCES if t == 3)
-_MID  = " OR ".join(f"site:{d}" for d,t,_ in LEGAL_SOURCES if t >= 2)
+_TOP = " OR ".join(f"site:{d}" for d, t, _ in LEGAL_SOURCES if t == 3)
+_MID = " OR ".join(f"site:{d}" for d, t, _ in LEGAL_SOURCES if t >= 2)
 
 _TOPIC_BOOSTERS = {
     "cheque_bounce":  "NI Act section 138 dishonour cheque judgment",
@@ -73,16 +74,16 @@ _TOPIC_BOOSTERS = {
 
 def _classify(query: str) -> str:
     q = query.lower()
-    if any(w in q for w in ["cheque","bounce","138","negotiable"]):  return "cheque_bounce"
-    if any(w in q for w in ["consumer","product","defect","refund"]): return "consumer"
-    if any(w in q for w in ["property","land","flat","builder","rera"]): return "property"
-    if any(w in q for w in ["labour","employment","fired","salary"]):  return "labour"
-    if any(w in q for w in ["divorce","matrimonial","maintenance"]):   return "family"
-    if any(w in q for w in ["cyber","fraud","online","upi","phishing"]):return "cyber"
-    if any(w in q for w in ["motor","accident","mact","vehicle"]):     return "motor"
-    if any(w in q for w in ["rent","tenant","landlord","deposit"]):    return "rent"
-    if any(w in q for w in ["medical","doctor","hospital","negligence"]):return "medical"
-    if any(w in q for w in ["fir","criminal","police","ipc","bns"]):   return "criminal"
+    if any(w in q for w in ["cheque", "bounce", "138", "negotiable"]): return "cheque_bounce"
+    if any(w in q for w in ["consumer", "product", "defect", "refund"]): return "consumer"
+    if any(w in q for w in ["property", "land", "flat", "builder", "rera"]): return "property"
+    if any(w in q for w in ["labour", "employment", "fired", "salary"]): return "labour"
+    if any(w in q for w in ["divorce", "matrimonial", "maintenance"]): return "family"
+    if any(w in q for w in ["cyber", "fraud", "online", "upi", "phishing"]): return "cyber"
+    if any(w in q for w in ["motor", "accident", "mact", "vehicle"]): return "motor"
+    if any(w in q for w in ["rent", "tenant", "landlord", "deposit"]): return "rent"
+    if any(w in q for w in ["medical", "doctor", "hospital", "negligence"]): return "medical"
+    if any(w in q for w in ["fir", "criminal", "police", "ipc", "bns"]): return "criminal"
     return "general"
 
 
@@ -96,15 +97,42 @@ def _dedup(results: list[dict]) -> list[dict]:
     seen_u, seen_t, out = set(), set(), []
     for r in results:
         uk = r.get("href", r.get("url", ""))[:65]
-        tk = r.get("title","")[:45].lower().strip()
+        tk = r.get("title", "")[:45].lower().strip()
         if uk not in seen_u and tk not in seen_t and tk:
             seen_u.add(uk); seen_t.add(tk); out.append(r)
     return out
 
 
+def _normalize(hits: list[dict]) -> list[dict]:
+    normalized = []
+    for r in hits:
+        normalized.append({
+            "title":   r.get("title", ""),
+            "snippet": r.get("body", ""),
+            "url":     r.get("href", ""),
+            "href":    r.get("href", ""),
+            "source":  r.get("href", "").split("/")[2].replace("www.", "") if r.get("href") else "",
+            "tier":    _weight(r.get("href", "")),
+        })
+    return normalized
+
+
+def _single_ddg_query(sq: str, budget: int) -> list[dict]:
+    """Run one DDG query — used by parallel executor."""
+    try:
+        with DDGS() as ddgs:
+            return list(ddgs.text(sq, max_results=budget))
+    except Exception:
+        return []
+
+
 def _ddg_search(query: str, topic: str) -> list[dict]:
-    """DuckDuckGo multi-strategy search — unchanged from v6."""
-    booster   = _TOPIC_BOOSTERS.get(topic, "")
+    """
+    DuckDuckGo multi-strategy search — NOW PARALLELIZED.
+    Runs all 5 strategies concurrently using a thread pool
+    instead of sequentially. Cuts ~4s down to ~1s.
+    """
+    booster = _TOPIC_BOOSTERS.get(topic, "")
     strategies = [
         (f"{query} {booster} judgment ({_TOP})", 4),
         (f"{query} section act India court ({_MID})", 3),
@@ -112,34 +140,27 @@ def _ddg_search(query: str, topic: str) -> list[dict]:
         (f"{booster} bare act explanation India", 2),
         (f"{query} landmark case India Supreme Court ({_TOP})", 2),
     ]
+
     all_hits: list[dict] = []
-    for sq, budget in strategies:
-        try:
-            with DDGS() as ddgs:
-                hits = list(ddgs.text(sq, max_results=budget))
-            all_hits.extend(hits)
-        except Exception:
-            continue
 
+    # ── PARALLEL EXECUTION ────────────────────────────────────
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_query = {
+            executor.submit(_single_ddg_query, sq, budget): sq
+            for sq, budget in strategies
+        }
+        for future in as_completed(future_to_query, timeout=8):
+            try:
+                hits = future.result(timeout=3)
+                all_hits.extend(hits)
+            except Exception:
+                continue
+
+    # Fallback if everything failed
     if not all_hits:
-        try:
-            with DDGS() as ddgs:
-                all_hits = list(ddgs.text(f"{query} India law court", max_results=6))
-        except Exception:
-            pass
+        all_hits = _single_ddg_query(f"{query} India law court", 6)
 
-    # Normalize to common format
-    normalized = []
-    for r in all_hits:
-        normalized.append({
-            "title":   r.get("title",""),
-            "snippet": r.get("body",""),
-            "url":     r.get("href",""),
-            "href":    r.get("href",""),
-            "source":  r.get("href","").split("/")[2].replace("www.","") if r.get("href") else "",
-            "tier":    _weight(r.get("href","")),
-        })
-    return normalized
+    return _normalize(all_hits)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -151,34 +172,34 @@ def get_live_cases(query: str) -> tuple[str, list[dict], list[dict]]:
     Returns:
       context_str   — compressed, ranked context for LLM
       ui_results    — list for source cards in UI
-      landmarks     — list of landmark judgment objects (NEW)
+      landmarks     — list of landmark judgment objects
     """
     topic = _classify(query)
 
-    # ── Stage 1: Gather from all sources ─────────────────────
-    ddg_results   = _ddg_search(query, topic)
+    # ── Stage 1: Gather from all sources (DDG now parallel) ──
+    ddg_results = _ddg_search(query, topic)
     kanoon_results: list[dict] = []
-    landmarks:      list[dict] = []
+    landmarks: list[dict] = []
 
     if KANOON_AVAILABLE:
         kanoon_results = search_indiankanoon(query, max_results=8)
-        landmarks      = get_landmark_judgments(query, topic)
+        landmarks = get_landmark_judgments(query, topic)
 
     # Merge and deduplicate
     all_results = ddg_results + kanoon_results
-    cleaned     = _dedup(all_results)
+    cleaned = _dedup(all_results)
 
     # ── Stage 2: Rerank by relevance ─────────────────────────
     if COHERE_AVAILABLE and cleaned:
         ranked = rerank_with_score_filter(
-            query       = query,
-            results     = cleaned,
-            text_field  = "snippet",
-            min_score   = 0.05,
-            top_n       = MAX_SEARCH_RESULTS + 4,
+            query=query,
+            results=cleaned,
+            text_field="snippet",
+            min_score=0.05,
+            top_n=MAX_SEARCH_RESULTS + 4,
         )
     else:
-        ranked = sorted(cleaned, key=lambda r: r.get("tier",0), reverse=True)
+        ranked = sorted(cleaned, key=lambda r: r.get("tier", 0), reverse=True)
         ranked = ranked[:MAX_SEARCH_RESULTS + 4]
 
     # ── Stage 3: Build raw context ────────────────────────────
@@ -209,15 +230,15 @@ def get_live_cases(query: str) -> tuple[str, list[dict], list[dict]]:
     ui_results = []
     for r in ranked[:6]:
         ui_results.append({
-            "title":     r.get("title",""),
-            "href":      r.get("url", r.get("href","")),
-            "snippet":   r.get("snippet","")[:200],
-            "court":     r.get("court",""),
-            "date":      r.get("date",""),
-            "citations": r.get("citations",0),
-            "source":    r.get("source",""),
-            "_weight":   r.get("tier",0),
-            "_score":    r.get("relevance_score",0),
+            "title":     r.get("title", ""),
+            "href":      r.get("url", r.get("href", "")),
+            "snippet":   r.get("snippet", "")[:200],
+            "court":     r.get("court", ""),
+            "date":      r.get("date", ""),
+            "citations": r.get("citations", 0),
+            "source":    r.get("source", ""),
+            "_weight":   r.get("tier", 0),
+            "_score":    r.get("relevance_score", 0),
         })
 
     return final_context, ui_results, landmarks
@@ -266,4 +287,4 @@ def search_recent_judgments(topic: str, year_from: int = 2021) -> tuple[str, lis
 
 
 def get_source_registry() -> list[dict]:
-    return [{"domain": d, "tier": t, "category": c} for d,t,c in LEGAL_SOURCES]
+    return [{"domain": d, "tier": t, "category": c} for d, t, c in LEGAL_SOURCES]

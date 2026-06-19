@@ -119,7 +119,7 @@ def get_gemini_response(prompt: str) -> str:
 
 # ── Search Config ────────────────────────────────────────────
 MAX_SEARCH_RESULTS = 3
-PDF_TEXT_LIMIT     = 8000
+PDF_TEXT_LIMIT     = 6000
 CHAT_HISTORY_LIMIT = 20
 
 # ── Jurisdiction Options ─────────────────────────────────────
