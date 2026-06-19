@@ -9,6 +9,8 @@ venv.bak/
 
 # Python caching
 __pycache__/
+*.pyc
+
 *.py[cod]
 *$py.class
 
@@ -16,6 +18,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .env
+frontend/.env.local
+.next/
+node_modules/
 
 backend/.env
 *.db
