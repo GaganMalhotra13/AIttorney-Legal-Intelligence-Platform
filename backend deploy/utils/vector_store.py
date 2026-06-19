@@ -12,8 +12,10 @@ import re
 
 try:
     import chromadb
-    from sentence_transformers import SentenceTransformer
-    _EMBED_MODEL = SentenceTransformer("all-MiniLM-L6-v2")  # 80MB, runs locally
+    # from sentence_transformers import SentenceTransformer
+    # _EMBED_MODEL = SentenceTransformer("all-MiniLM-L6-v2")  # 80MB, runs locally
+    _embed_model = None
+
     _CLIENT      = chromadb.Client()
     VECTOR_AVAILABLE = True
 except ImportError:
@@ -23,7 +25,12 @@ except ImportError:
 
 
 # ── Chunking ─────────────────────────────────────────────────
-
+def get_embed_model():
+    global _embed_model
+    if _embed_model is None:
+        from sentence_transformers import SentenceTransformer
+        _embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _embed_model
 def _chunk_text(text: str, size: int = 500, overlap: int = 60) -> list[str]:
     """Split text into overlapping chunks for better retrieval."""
     chunks, i = [], 0
