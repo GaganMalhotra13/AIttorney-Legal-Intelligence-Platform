@@ -16,6 +16,5 @@ beautifulsoup4
 lxml
 cohere
 groq
-chromadb
-sentence-transformers
+
 pytest

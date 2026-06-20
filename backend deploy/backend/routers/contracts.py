@@ -23,7 +23,21 @@ router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 async def audit_contract_route(body: AuditRequest, user=Depends(get_current_user)):
     score  = score_contract(body.text, body.role)
     gemini = audit_contract(body.text, body.role)
-    doc_id = index_contract(body.text, "uploaded")
+
+    doc_id = None
+    try:
+        doc_id = index_contract(body.text, "uploaded")
+    except Exception as e:
+        print(f"⚠️ Vector indexing skipped: {e}")
+
+    await audits_col.insert_one({
+        "username":   user["email"],
+        "role":       body.role,
+        "risk_score": score["score"],
+        "grade":      score["grade"],
+        "created_at": datetime.utcnow(),
+    })
+    return {"score": score, "analysis": gemini, "doc_id": doc_id}
 
     await audits_col.insert_one({
         "username":   user["email"],
