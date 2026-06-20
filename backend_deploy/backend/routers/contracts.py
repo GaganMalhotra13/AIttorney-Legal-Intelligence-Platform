@@ -15,14 +15,42 @@ if ROOT not in sys.path:
 from utils.ai import audit_contract, chat_with_contract, summarize_for_layman
 from utils.contract_scorer import score_contract
 from utils.vector_store import index_contract, semantic_search
+from utils.ai import audit_contract, audit_contract_structured, chat_with_contract, summarize_for_layman
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 
 
 @router.post("/audit")
 async def audit_contract_route(body: AuditRequest, user=Depends(get_current_user)):
-    score  = score_contract(body.text, body.role)
-    gemini = audit_contract(body.text, body.role)
+    # Layer 1 — fast deterministic regex (catches exact legal terms)
+    regex_score = score_contract(body.text, body.role)
+
+    # Layer 2 — AI structured detection (catches euphemisms/soft phrasing)
+    ai_result = audit_contract_structured(body.text, body.role)
+
+    # Merge — combine flags from both, dedupe by clause name
+    seen_clauses = {f["clause"].lower() for f in regex_score["flags"]}
+    merged_flags = list(regex_score["flags"])
+
+    for flag in ai_result.get("flags", []):
+        if flag["clause"].lower() not in seen_clauses:
+            merged_flags.append(flag)
+            seen_clauses.add(flag["clause"].lower())
+
+    merged_flags.sort(key=lambda x: x["weight"], reverse=True)
+    total_score = min(95, sum(f["weight"] for f in merged_flags))
+    grade = "HIGH" if total_score > 60 else "MODERATE" if total_score > 30 else "LOW"
+
+    final_score = {
+        "score": total_score,
+        "grade": grade,
+        "flags": merged_flags,
+        "green_flags": list(set(regex_score["green_flags"] + ai_result.get("green_flags", []))),
+        "flag_count": len(merged_flags),
+        "summary": ai_result.get("overall_verdict") or regex_score["summary"],
+    }
+
+    gemini_analysis = audit_contract(body.text, body.role)
 
     doc_id = None
     try:
@@ -33,11 +61,12 @@ async def audit_contract_route(body: AuditRequest, user=Depends(get_current_user
     await audits_col.insert_one({
         "username":   user["email"],
         "role":       body.role,
-        "risk_score": score["score"],
-        "grade":      score["grade"],
+        "risk_score": final_score["score"],
+        "grade":      final_score["grade"],
         "created_at": datetime.utcnow(),
     })
-    return {"score": score, "analysis": gemini, "doc_id": doc_id}
+
+    return {"score": final_score, "analysis": gemini_analysis, "doc_id": doc_id}
 
     await audits_col.insert_one({
         "username":   user["email"],

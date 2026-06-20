@@ -3,6 +3,8 @@ utils/ai.py — AIttorney v7
 All Gemini calls upgraded to use landmark judgments + compressed context.
 """
 from config import MODEL
+import json
+import re
 
 
 def _safe(prompt: str) -> str:
@@ -116,6 +118,82 @@ TOP PRIORITY TO NEGOTIATE: [The single most important clause to push back on]
 Contract text:
 {text[:6000]}
 """)
+def audit_contract_structured(text: str, role: str) -> dict:
+    """
+    AI-based clause risk detection — returns structured data instead of prose.
+    Catches euphemistic/soft-worded risk clauses that regex patterns miss.
+    Falls back to Groq if Gemini quota is exhausted.
+    """
+    prompt = f"""You are a contract risk analyzer for a {role} reviewing this contract.
+
+Find ALL clauses that could disadvantage a {role}, including softly-worded
+or euphemistic ones (e.g. "may be reassigned" = unilateral transfer risk,
+"shall be considered final" = no appeal mechanism, "discretionary" = no
+guaranteed pay).
+
+Respond ONLY with valid JSON, no markdown, no commentary:
+
+{{
+  "flags": [
+    {{
+      "clause": "Short name for the clause",
+      "severity": "HIGH" or "MEDIUM" or "LOW",
+      "weight": <number 3-25 based on severity>,
+      "description": "Why this disadvantages a {role}, one sentence",
+      "excerpt": "The exact quoted text from the contract, max 200 chars"
+    }}
+  ],
+  "green_flags": ["short phrase for any genuinely protective clause found"],
+  "overall_verdict": "One sentence summary"
+}}
+
+Find every real risk, even subtle ones. If genuinely no risks exist, return empty flags array.
+
+Contract text:
+{text[:6000]}
+"""
+
+    def _parse(raw: str) -> dict | None:
+        try:
+            clean = re.sub(r"```json\s*|\s*```", "", raw).strip()
+            parsed = json.loads(clean)
+            if "flags" in parsed:
+                return parsed
+        except Exception:
+            pass
+        return None
+
+    # ── Try Gemini first (via existing MODEL shim with its own retry/backoff) ──
+    try:
+        result = MODEL.generate_content(prompt)
+        raw = result.text if hasattr(result, 'text') else str(result)
+        parsed = _parse(raw)
+        if parsed:
+            return parsed
+        print("⚠️ Gemini returned unparseable JSON, trying Groq fallback...")
+    except Exception as e:
+        print(f"⚠️ Gemini structured audit failed: {e}, trying Groq fallback...")
+
+    # ── Groq fallback — direct call, bypasses MODEL shim's Gemini-first logic ──
+    try:
+        from config import GROQ_CLIENT
+        if GROQ_CLIENT:
+            resp = GROQ_CLIENT.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.2,
+            )
+            raw = resp.choices[0].message.content
+            parsed = _parse(raw)
+            if parsed:
+                return parsed
+            print("⚠️ Groq also returned unparseable JSON")
+    except Exception as e:
+        print(f"⚠️ Groq structured audit failed: {e}")
+
+    # ── Both failed — return empty, regex layer still provides baseline ──
+    return {"flags": [], "green_flags": [], "overall_verdict": ""}
 
 
 def chat_with_contract(question: str, context: str) -> str:
