@@ -117,8 +117,8 @@ export default function LoginPage() {
           {/* Demo credentials — informational only, not a restriction */}
           <div className="mb-6 p-4 rounded-xl bg-coral-50 border border-coral-100">
             <p className="text-xs text-coral-700 font-semibold mb-1">Try the demo</p>
-            <p className="font-mono text-xs text-coral-600">{DEMO_EMAIL}</p>
-            <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type this email ↑ — or sign in with your own account.</p>
+            {/* <p className="font-mono text-xs text-coral-600">{DEMO_EMAIL}</p> */}
+            <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type demo email .</p>
           </div>
 
           <div className="space-y-4">
