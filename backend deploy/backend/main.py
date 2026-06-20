@@ -31,7 +31,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8501",
-        "https://your-frontend.vercel.app",
+        "https://aittorney-legalintelligence.vercel.app/",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
