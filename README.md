@@ -121,7 +121,7 @@ MongoDB Atlas account (free M0 tier)
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/GaganMalhotra13/AIttorney-Legal-Intelligence-Platform.git
+
 cd AIttorney-Legal-Intelligence-Platform
 
 # Backend
