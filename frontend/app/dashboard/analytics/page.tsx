@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div>
         <div className="eyebrow mb-3">Personal Analytics · MongoDB Aggregation</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Your Legal <em className="not-italic text-coral-600">Analytics</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -77,16 +77,16 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-4 gap-4">
-          {[1,2,3,4].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  {[1,2,3,4].map((i) => (
             <div key={i} className="skeleton h-32 rounded-2xl" />
           ))}
         </div>
       ) : (
         <>
           {/* Stat cards */}
-          <div className="grid grid-cols-4 gap-4">
-            <StatCard
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <StatCard
               icon={Scale}       label="Cases Analyzed"
               value={data?.totals?.cases ?? 0}
               sub="Total searches"
@@ -117,15 +117,15 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Charts row */}
-          <div className="grid grid-cols-3 gap-4">
-            {/* Weekly activity */}
-            <div className="col-span-2 card p-6">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  {/* Weekly activity */}
+  <div className="lg:col-span-2 card p-6">
               <p className="label mb-5 flex items-center gap-1.5">
                 <BarChart2 className="w-3 h-3" /> Weekly Case Activity
               </p>
               {weeklyData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={weeklyData} barSize={28}>
+                <ResponsiveContainer width="100%" height={180}>
+  <BarChart data={weeklyData} barSize={20}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F4F3EF" />
                     <XAxis
                       dataKey="label"
@@ -236,8 +236,8 @@ export default function AnalyticsPage() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.04 }}
-                      className="flex items-center justify-between py-3
-                                 border-b border-slate-50 last:border-0"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3
+                 border-b border-slate-50 last:border-0 gap-1.5 sm:gap-0"
                     >
                       <div className="flex-1 min-w-0 mr-4">
                         <p className="text-sm text-navy-800 truncate font-medium">
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
                             : "—"}
                         </p>
                       </div>
-                      <div className="text-right flex-shrink-0">
+<div className="text-left sm:text-right flex-shrink-0">
                         <p className={`font-display text-xl font-bold leading-none ${gc}`}>
                           {c.win_prob}%
                         </p>

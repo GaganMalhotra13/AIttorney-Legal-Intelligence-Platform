@@ -107,7 +107,7 @@ export default function DocumentVaultPage() {
       {/* Header */}
       <div>
         <div className="eyebrow mb-3">Document Intelligence · AI Tagging · Semantic Search</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Document <em className="not-italic text-coral-600">Vault</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -117,7 +117,7 @@ export default function DocumentVaultPage() {
       </div>
 
       {/* Upload + Search */}
-      <div className="grid grid-cols-2 gap-4">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Upload zone */}
         <div>
           <input ref={fileRef} type="file"
@@ -198,9 +198,9 @@ export default function DocumentVaultPage() {
       </div>
 
       {/* Documents + Detail */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Document list */}
-        <div className="col-span-2 space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  {/* Document list */}
+  <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
             <p className="label flex items-center gap-1.5">
               <FolderOpen className="w-3 h-3" />
@@ -316,7 +316,7 @@ export default function DocumentVaultPage() {
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 12 }}
-                className="card p-5 sticky top-4"
+className="card p-5 lg:sticky lg:top-4"
               >
                 <div className="flex items-center justify-between mb-4">
                   <p className="label">Document Details</p>

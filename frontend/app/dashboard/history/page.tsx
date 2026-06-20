@@ -27,14 +27,14 @@ export default function HistoryPage() {
     <div className="space-y-8 page-enter">
       <div>
         <div className="eyebrow mb-3">Persistent Storage · MongoDB</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Your <em className="not-italic text-coral-600">History</em>
         </h1>
         <p className="text-slate-500 text-sm">All your past case analyses, saved across sessions.</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { icon: FileSearch,  label: "Cases Analyzed",   value: stats.total,   unit: "" },
           { icon: TrendingUp,  label: "Avg. Win Prob.",   value: stats.avgProb, unit: "%" },
@@ -89,7 +89,7 @@ export default function HistoryPage() {
                   key={i}
                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-start justify-between p-4 rounded-xl bg-bg2
+                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl bg-bg2 gap-2 sm:gap-0
                              border border-slate-100 hover:border-slate-200 transition-all"
                 >
                   <div className="flex-1 min-w-0 mr-4">
@@ -102,7 +102,7 @@ export default function HistoryPage() {
                       }) : "—"}
                     </p>
                   </div>
-                  <div className="text-right flex-shrink-0">
+<div className="text-left sm:text-right flex-shrink-0">
                     <p className={`font-display text-2xl font-bold leading-none ${gc}`}>
                       {item.win_prob}%
                     </p>

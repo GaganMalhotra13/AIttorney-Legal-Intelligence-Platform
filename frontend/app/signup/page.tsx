@@ -72,7 +72,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ivory px-4 py-10">
+<div className="min-h-screen flex items-center justify-center bg-ivory px-4 py-6 sm:py-10">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -101,7 +101,7 @@ export default function SignupPage() {
         </div>
 
         {/* Card */}
-        <div className="card p-7 space-y-5">
+<div className="card p-5 sm:p-7 space-y-5">
           <div>
             <h1 className="font-display text-2xl font-bold text-ink-900 mb-1">
               Create your account

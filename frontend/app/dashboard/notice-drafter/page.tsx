@@ -41,7 +41,7 @@ export default function NoticeDrafterPage() {
     <div className="space-y-8 page-enter">
       <div>
         <div className="eyebrow mb-3">Automated Drafting · PDF Output</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Notice <em className="not-italic text-coral-600">Drafter</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -49,7 +49,7 @@ export default function NoticeDrafterPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input panel */}
         <div className="space-y-5">
           <div className="card p-6">
@@ -62,7 +62,7 @@ export default function NoticeDrafterPage() {
                   placeholder="Describe the dispute in 2-3 sentences…"
                   rows={4} className="input resize-none" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="label">Sender Name</label>
                   <input value={sender} onChange={(e) => setSender(e.target.value)}

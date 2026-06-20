@@ -56,7 +56,7 @@ export default function RoadmapPage() {
     <div className="space-y-8 page-enter">
       <div>
         <div className="eyebrow mb-3">Procedural Intelligence · India-Specific</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Legal <em className="not-italic text-coral-600">Roadmap</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -64,9 +64,9 @@ export default function RoadmapPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Input */}
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  {/* Input */}
+  <div className="space-y-4">
           <div className="card p-5">
             <p className="font-semibold text-navy-800 text-sm mb-4">Your Situation</p>
             <textarea value={query} onChange={(e) => setQuery(e.target.value)}
@@ -104,7 +104,7 @@ export default function RoadmapPage() {
         </div>
 
         {/* Roadmap */}
-        <div className="col-span-2">
+<div className="lg:col-span-2">
           <div className="card p-6 h-full">
             <p className="label mb-5 flex items-center gap-1.5"><Map className="w-3 h-3" /> Your 4-Step Action Plan</p>
 

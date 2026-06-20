@@ -67,7 +67,7 @@ export default function AdvocateFinderPage() {
       {/* Header */}
       <div>
         <div className="eyebrow mb-3">AI-Powered · India Specific</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Find an <em className="not-italic text-coral-600">Advocate</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -76,8 +76,8 @@ export default function AdvocateFinderPage() {
       </div>
 
       {/* Search Panel */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="card p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div className="card p-6 space-y-4">
           <p className="font-semibold text-navy-800 text-sm">Search Criteria</p>
 
           <div>
@@ -127,7 +127,7 @@ export default function AdvocateFinderPage() {
         </div>
 
         {/* Results */}
-        <div className="col-span-2 space-y-4">
+<div className="lg:col-span-2 space-y-4">
 
           {/* Empty state */}
           {!loading && !summary && (

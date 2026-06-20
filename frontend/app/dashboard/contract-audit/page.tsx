@@ -99,7 +99,7 @@ export default function ContractAuditPage() {
     <div className="space-y-8 page-enter">
       <div>
         <div className="eyebrow mb-3">Document Intelligence · NLP Scoring</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Contract <em className="not-italic text-coral-600">Audit & Chat</em>
         </h1>
         <p className="text-slate-500 text-sm">
@@ -108,8 +108,8 @@ export default function ContractAuditPage() {
       </div>
 
       {/* Upload + config */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div className="md:col-span-2">
           <input
             ref={fileRef} type="file" accept=".pdf,.txt"
             className="hidden" onChange={handleFile}
@@ -173,12 +173,12 @@ export default function ContractAuditPage() {
             className="space-y-6"
           >
             {/* Score + flags */}
-            <div className="grid grid-cols-3 gap-4">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* Risk score */}
-              <div className="card p-6 text-center">
+  {/* Risk score */}
+  <div className="card p-6 text-center">
                 <p className="label mb-4">NLP Risk Score</p>
-                <p className={`font-display text-6xl font-bold leading-none mb-1 ${riskColor}`}>
+<p className={`font-display text-4xl sm:text-6xl font-bold leading-none mb-1 ${riskColor}`}>
                   {score.score}
                 </p>
                 <p className="font-mono text-2xs text-slate-400 uppercase tracking-widest mb-4">
@@ -211,8 +211,8 @@ export default function ContractAuditPage() {
               </div>
 
               {/* Flags */}
-              <div className="col-span-2 card p-5">
-                <p className="label mb-4">Risk Clauses Detected</p>
+             <div className="md:col-span-2 card p-5">
+  <p className="label mb-4">Risk Clauses Detected</p>
                 {score.flags?.length === 0 && (
                   <p className="text-sm text-slate-400 text-center py-8">
                     No risk clauses detected in this contract.

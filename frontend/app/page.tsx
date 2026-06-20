@@ -102,15 +102,15 @@ export default function LoginPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+<div className="flex-1 flex items-center justify-center p-5 sm:p-8">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: [0.16,1,0.3,1] }} className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-3 mb-10">
+<div className="lg:hidden flex items-center gap-3 mb-6 sm:mb-10">
             <div className="w-9 h-9 rounded-xl bg-coral-600 flex items-center justify-center"><Scale className="w-4 h-4 text-white" /></div>
             <span className="font-display text-xl font-bold text-navy-900">AI<span className="text-coral-600">ttorney</span></span>
           </div>
 
-          <div className="mb-8">
-            <h2 className="font-display text-3xl font-bold text-navy-900 tracking-tight mb-2">Welcome back</h2>
+          <div className="mb-6 sm:mb-8">
+  <h2 className="font-display text-2xl sm:text-3xl font-bold text-navy-900 tracking-tight mb-2">Welcome back</h2>
             <p className="text-slate-500 text-sm">Sign in to your workspace to continue your legal research.</p>
           </div>
 

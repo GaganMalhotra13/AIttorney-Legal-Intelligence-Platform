@@ -178,7 +178,7 @@ export default function CaseMirrorPage() {
       {/* Header */}
       <div>
         <div className="eyebrow mb-3">Legal Research Terminal · 11 AI Modules · 18 Sources</div>
-        <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight leading-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight leading-tight mb-3">
           What's Your <em className="not-italic text-coral-600">Legal Situation?</em>
         </h1>
         <p className="text-slate-500 text-sm leading-relaxed max-w-2xl">
@@ -231,7 +231,7 @@ export default function CaseMirrorPage() {
         </div>
 
         {/* Config bar */}
-        <div className="px-8 py-4 bg-bg2 border-t border-slate-100 flex flex-wrap gap-3 items-end">
+<div className="px-4 sm:px-8 py-4 bg-bg2 border-t border-slate-100 flex flex-col sm:flex-row flex-wrap gap-3 sm:items-end">
           <div className="flex-1 min-w-[160px]">
             <label className="label">Case Type</label>
             <select value={caseType} onChange={(e) => setCaseType(e.target.value)}
@@ -239,22 +239,22 @@ export default function CaseMirrorPage() {
               {CASE_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <div className="w-36">
-            <label className="label">Claim (₹)</label>
+          <div className="w-full sm:w-36">
+  <label className="label">Claim (₹)</label>
             <input type="number" value={claimAmt || ""}
               onChange={(e) => setClaimAmt(Number(e.target.value))}
               placeholder="0"
               className="input py-2 text-xs" />
           </div>
-          <div className="w-40">
-            <label className="label">Incident Date</label>
+          <div className="w-full sm:w-40">
+  <label className="label">Incident Date</label>
             <input type="date" value={incDate} onChange={(e) => setIncDate(e.target.value)}
               className="input py-2 text-xs" />
           </div>
           <motion.button
             onClick={analyze} disabled={loading}
             whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}
-            className="btn-primary h-9 px-6 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+className="btn-primary h-9 px-6 text-sm disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function CaseMirrorPage() {
             className="space-y-6"
           >
             {/* Scorecard */}
-            <div className="grid grid-cols-4 gap-4">
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Win probability */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -420,7 +420,7 @@ export default function CaseMirrorPage() {
                     <p className="font-semibold text-navy-800 text-sm mb-4">
                       Transparent Scoring Breakdown — 28 Signal Heuristic Engine
                     </p>
-                    <div className="grid grid-cols-2 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <p className="label mb-3 text-teal-500">Strengthening Factors</p>
                         {pos.length === 0
@@ -465,11 +465,11 @@ export default function CaseMirrorPage() {
             </AnimatePresence>
 
             {/* Laws + Analysis */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="card p-5">
-                <p className="label mb-3 flex items-center gap-1.5">
-                  <Scale className="w-3 h-3" /> Applicable Laws
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div className="card p-5">
+    <p className="label mb-3 flex items-center gap-1.5">
+      <Scale className="w-3 h-3" /> Applicable Laws
+    </p>
                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
                   {caseResult.laws}
                 </p>
@@ -491,7 +491,7 @@ export default function CaseMirrorPage() {
                   <ExternalLink className="w-3 h-3" />
                   {caseResult.sources.length} Live Sources — Authority-Ranked
                 </p>
-                <div className="grid grid-cols-3 gap-3">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {caseResult.sources.slice(0, 6).map((s: any, i: number) => {
                     const domain = s.href?.split("/")[2]?.replace("www.", "") || "source";
                     const weight = s._weight || 1;
@@ -535,7 +535,7 @@ export default function CaseMirrorPage() {
                     <button
                       key={key}
                       onClick={() => setActiveModule(key)}
-                      className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap
+className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-xs font-medium whitespace-nowrap
                                   border-b-2 transition-all flex-shrink-0
                                   ${activeModule === key
                                     ? "border-coral-500 text-coral-700 bg-surface"
@@ -579,7 +579,7 @@ export default function CaseMirrorPage() {
       {!caseResult && !loading && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="grid grid-cols-5 gap-3"
+className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         >
           {MODULES.map(({ key, icon: Icon, label, desc }, i) => (
             <motion.div

@@ -141,7 +141,7 @@ export default function HomeDashboard() {
   const firstName = user?.name?.split(" ")[0] || "there";
 
   return (
-    <div className="space-y-10 page-enter">
+<div className="space-y-6 sm:space-y-10 page-enter">
 
       {/* ── HERO GREETING ──────────────────────────────────── */}
       <motion.div
@@ -167,12 +167,11 @@ export default function HomeDashboard() {
                         rounded-full filter blur-3xl opacity-6
                         -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
-        <div className="relative z-10 flex items-start justify-between flex-wrap gap-6">
-          <div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start justify-between flex-wrap gap-6">          <div>
             <p className="font-mono text-2xs tracking-widest uppercase text-white/40 mb-2">
               {greeting}
             </p>
-            <h1 className="font-display text-4xl font-bold tracking-tight mb-3">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3">
               {greeting}, {firstName} 👋
             </h1>
             <p className="text-white/60 text-sm leading-relaxed max-w-lg">
@@ -235,7 +234,7 @@ export default function HomeDashboard() {
               View all <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {stats.recent_cases.slice(0, 3).map((c, i) => {
               const gc =
                 c.grade === "Strong"   ? "text-teal-600" :
@@ -278,7 +277,7 @@ export default function HomeDashboard() {
         <p className="label mb-5 flex items-center gap-1.5">
           <Zap className="w-3 h-3" /> All Features
         </p>
-        <div className="grid grid-cols-4 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {FEATURES.map(({ href, icon: Icon, label, desc, badge, badgeColor, border, gradient }, i) => (
             <Link key={href} href={href}>
               <motion.div

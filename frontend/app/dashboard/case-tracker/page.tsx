@@ -115,10 +115,10 @@ export default function CaseTrackerPage() {
   return (
     <div className="space-y-8 page-enter">
       {/* Header */}
-      <div className="flex items-start justify-between">
+<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <div className="eyebrow mb-3">Court Date Tracker · AI Preparation</div>
-          <h1 className="font-display text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
             Case <em className="not-italic text-coral-600">Tracker</em>
           </h1>
           <p className="text-slate-500 text-sm">
@@ -128,7 +128,7 @@ export default function CaseTrackerPage() {
         <motion.button
           onClick={() => setShowForm(!showForm)}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          className="btn-primary flex items-center gap-2"
+className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
         >
           <Plus className="w-4 h-4" />
           Add Court Date
@@ -156,7 +156,7 @@ export default function CaseTrackerPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="label">Case Title *</label>
                   <input
@@ -225,7 +225,7 @@ export default function CaseTrackerPage() {
                 />
               </div>
 
-              <div className="flex gap-3">
+<div className="flex flex-col sm:flex-row gap-3">
                 <motion.button
                   onClick={handleAdd} disabled={adding}
                   whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
@@ -247,7 +247,7 @@ export default function CaseTrackerPage() {
       </AnimatePresence>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: "Upcoming Hearings", value: upcoming.length,  color: "text-coral-600",  bg: "bg-coral-50" },
           { label: "Completed",         value: completed.filter((d) => d.status === "completed").length, color: "text-teal-600", bg: "bg-teal-50" },
@@ -416,7 +416,7 @@ function DateCard({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-slate-100"
           >
-            <div className="p-5 grid grid-cols-2 gap-6">
+<div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Preparation checklist */}
               {date.preparation && (
                 <div>
