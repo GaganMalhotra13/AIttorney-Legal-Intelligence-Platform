@@ -1,39 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { historyAPI, casesAPI } from "@/lib/api";
+import { historyAPI } from "@/lib/api";
 import { useStore } from "@/store/useStore";
-import toast from "react-hot-toast";
-import { History, TrendingUp, FileSearch, Clock, Loader2 } from "lucide-react";
+import { History, TrendingUp, FileSearch, Clock } from "lucide-react";
 
 export default function HistoryPage() {
-  const router = useRouter();
-  const { user, setCaseResult, setLiveContext } = useStore();
-  const [cases,    setCases]    = useState<any[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [openingId, setOpeningId] = useState<string | null>(null);
+  const { user } = useStore();
+  const [cases,   setCases]   = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     historyAPI.cases()
-      .then((r) => setCases(r.data))
-      .catch(() => {})
+  .then((r) => setCases(r.data.cases))      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const openSaved = async (id: string) => {
-    setOpeningId(id);
-    try {
-      const { data } = await casesAPI.getById(id);
-      setCaseResult(data);
-      setLiveContext(data.analysis);
-      router.push("/dashboard/case-mirror");
-    } catch {
-      toast.error("Couldn't load saved result");
-    } finally {
-      setOpeningId(null);
-    }
-  };
 
   const stats = {
     total:   cases.length,
@@ -45,16 +26,14 @@ export default function HistoryPage() {
     <div className="space-y-8 page-enter">
       <div>
         <div className="eyebrow mb-3">Persistent Storage · MongoDB</div>
-        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
+<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Your <em className="not-italic text-coral-600">History</em>
         </h1>
-        <p className="text-slate-500 text-sm">
-          Click any past analysis to view it instantly — no need to re-run.
-        </p>
+        <p className="text-slate-500 text-sm">All your past case analyses, saved across sessions.</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { icon: FileSearch,  label: "Cases Analyzed",   value: stats.total,   unit: "" },
           { icon: TrendingUp,  label: "Avg. Win Prob.",   value: stats.avgProb, unit: "%" },
@@ -104,16 +83,13 @@ export default function HistoryPage() {
             {cases.map((item, i) => {
               const gc = item.grade === "Strong" ? "text-teal-600" :
                          item.grade === "Moderate" ? "text-amber-600" : "text-coral-600";
-              const isOpening = openingId === item._id;
               return (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => !isOpening && openSaved(item._id)}
-                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl bg-bg2
-                             border border-slate-100 hover:border-coral-200 hover:bg-coral-50/30
-                             transition-all cursor-pointer gap-2 sm:gap-0"
+                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl bg-bg2 gap-2 sm:gap-0
+                             border border-slate-100 hover:border-slate-200 transition-all"
                 >
                   <div className="flex-1 min-w-0 mr-4">
                     <p className="text-sm font-medium text-navy-800 line-clamp-1 mb-1">
@@ -125,19 +101,13 @@ export default function HistoryPage() {
                       }) : "—"}
                     </p>
                   </div>
-                  <div className="text-left sm:text-right flex-shrink-0 flex items-center gap-3">
-                    {isOpening ? (
-                      <Loader2 className="w-4 h-4 text-coral-400 animate-spin" />
-                    ) : (
-                      <div>
-                        <p className={`font-display text-2xl font-bold leading-none ${gc}`}>
-                          {item.win_prob}%
-                        </p>
-                        <p className="font-mono text-2xs text-slate-400 mt-0.5 uppercase">
-                          {item.grade}
-                        </p>
-                      </div>
-                    )}
+<div className="text-left sm:text-right flex-shrink-0">
+                    <p className={`font-display text-2xl font-bold leading-none ${gc}`}>
+                      {item.win_prob}%
+                    </p>
+                    <p className="font-mono text-2xs text-slate-400 mt-0.5 uppercase">
+                      {item.grade}
+                    </p>
                   </div>
                 </motion.div>
               );

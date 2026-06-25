@@ -105,6 +105,7 @@ export const noticesAPI = {
 // ── History ───────────────────────────────────────────────────
 export const historyAPI = {
   cases: () => api.get("/api/cases/history"),
+  stats: () => api.get("/api/cases/stats"), 
 };
 
 // ── Analytics ─────────────────────────────────────────────────
