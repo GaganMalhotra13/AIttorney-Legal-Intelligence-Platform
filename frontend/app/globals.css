@@ -162,11 +162,120 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+
 /* ── Page transition ── */
 .page-enter {
   animation: fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both;
 }
+/* ── Markdown rendering for AI module results ─────────────── */
+.markdown-result {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #44403C;
+}
 
+.markdown-result h1,
+.markdown-result h2,
+.markdown-result h3 {
+  font-family: var(--font-bricolage, inherit);
+  font-weight: 700;
+  color: #1B2236;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-result h1:first-child,
+.markdown-result h2:first-child,
+.markdown-result h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-result h3 {
+  font-size: 0.95rem;
+  color: #C4472A;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(196, 71, 42, 0.15);
+}
+
+.markdown-result strong {
+  font-weight: 700;
+  color: #1B2236;
+}
+
+.markdown-result p {
+  margin-bottom: 0.75rem;
+}
+
+.markdown-result ul,
+.markdown-result ol {
+  margin: 0.5rem 0 0.75rem 0;
+  padding-left: 1.25rem;
+}
+
+.markdown-result li {
+  margin-bottom: 0.4rem;
+}
+
+.markdown-result ul li::marker {
+  color: #C4472A;
+}
+
+/* Tables — matches your card/border theme */
+.markdown-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0 1rem 0;
+  font-size: 0.8rem;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #EEECEA;
+}
+
+.markdown-result thead {
+  background: #1B2236;
+}
+
+.markdown-result th {
+  color: #FFFFFF;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.markdown-result td {
+  padding: 0.6rem 0.85rem;
+  border-top: 1px solid #EEECEA;
+  color: #44403C;
+}
+
+.markdown-result tbody tr:nth-child(even) {
+  background: #F5F4F0;
+}
+
+.markdown-result hr {
+  border: none;
+  border-top: 1px solid #EEECEA;
+  margin: 1rem 0;
+}
+
+.markdown-result code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8em;
+  background: #F5F4F0;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  color: #C4472A;
+}
+.markdown-result-chat p {
+  margin-bottom: 0.4rem;
+}
+.markdown-result-chat h3 {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
 /* ── Stagger children ── */
 .stagger > * {
   animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;

@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { motion, AnimatePresence } from "framer-motion";
 import { casesAPI, brainAPI, CaseRequest } from "@/lib/api";
 import { useStore } from "@/store/useStore";
+import ModulePanel, { MODULES } from "@/components/features/ModulePanel";
 import toast from "react-hot-toast";
 import {
   Search, Zap, Scale, Clock, TrendingUp, ExternalLink,
@@ -28,7 +31,7 @@ const EXAMPLES = [
   "UPI fraud — ₹45,000 transferred to scammer",
 ];
 
-const MODULES = [
+const MODULES_LIST = [
   { key: "opponent",     icon: Sword,       label: "Opponent Analysis",   desc: "What the other side will argue" },
   { key: "evidence",     icon: ListChecks,  label: "Evidence Checklist",  desc: "Exact documents to gather" },
   { key: "settlement",   icon: DollarSign,  label: "Settlement Estimate", desc: "Realistic ₹ range" },
@@ -64,11 +67,11 @@ function ScoreGauge({ prob, grade }: { prob: number; grade: string }) {
   );
 }
 
-function ModulePanel({ moduleKey, query, caseType, claimAmt, liveContext, scoreData }: any) {
+function ModulePaanel({ moduleKey, query, caseType, claimAmt, liveContext, scoreData }: any) {
   const [loading, setLoading] = useState(false);
   const { moduleResults, setModule } = useStore();
   const result = moduleResults[moduleKey];
-  const mod    = MODULES.find((m) => m.key === moduleKey)!;
+  const mod    = MODULES_LIST.find((m) => m.key === moduleKey)!;
 
   const run = async () => {
     setLoading(true);
@@ -467,21 +470,25 @@ className="btn-primary h-9 px-6 text-sm disabled:opacity-60 disabled:cursor-not-
             {/* Laws + Analysis */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
   <div className="card p-5">
-    <p className="label mb-3 flex items-center gap-1.5">
-      <Scale className="w-3 h-3" /> Applicable Laws
-    </p>
-                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
-                  {caseResult.laws}
-                </p>
-              </div>
-              <div className="col-span-2 card p-5">
-                <p className="label mb-3 flex items-center gap-1.5">
-                  <Gavel className="w-3 h-3" /> Full Analysis · Live RAG
-                </p>
-                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line result-text">
-                  {caseResult.analysis}
-                </p>
-              </div>
+  <p className="label mb-3 flex items-center gap-1.5">
+    <Scale className="w-3 h-3" /> Applicable Laws
+  </p>
+  <div className="markdown-result">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {caseResult.laws}
+    </ReactMarkdown>
+  </div>
+</div>
+             <div className="col-span-2 card p-5">
+  <p className="label mb-3 flex items-center gap-1.5">
+    <Gavel className="w-3 h-3" /> Full Analysis · Live RAG
+  </p>
+  <div className="markdown-result">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {caseResult.analysis}
+    </ReactMarkdown>
+  </div>
+</div>
             </div>
 
             {/* Sources grid */}
@@ -531,7 +538,7 @@ className="btn-primary h-9 px-6 text-sm disabled:opacity-60 disabled:cursor-not-
               <div className="bg-surface rounded-2xl border border-slate-100 shadow-card overflow-hidden">
                 {/* Module tabs */}
                 <div className="flex overflow-x-auto border-b border-slate-100 bg-bg2">
-                  {MODULES.map(({ key, icon: Icon, label }) => (
+                  {MODULES_LIST.map(({ key, icon: Icon, label }) => (
                     <button
                       key={key}
                       onClick={() => setActiveModule(key)}
@@ -550,24 +557,24 @@ className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-xs font-medium whites
 
                 {/* Module content */}
                 <div className="p-6 min-h-[280px]">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeModule}
-                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2 }}
-                      className="h-full"
-                    >
-                      <ModulePanel
-                        moduleKey={activeModule}
-                        query={query}
-                        caseType={caseType}
-                        claimAmt={claimAmt}
-                        liveContext={liveContext}
-                        scoreData={caseResult.score_data}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
+                   <AnimatePresence mode="wait">
+    <motion.div
+      key={activeModule}
+      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.2 }}
+      className="h-full"
+    >
+      <ModulePaanel
+        moduleKey={activeModule}
+        query={query}
+        caseType={caseType}
+        claimAmt={claimAmt}
+        liveContext={liveContext}
+        scoreData={caseResult?.score_data ?? null}
+      />
+    </motion.div>
+  </AnimatePresence>
                 </div>
               </div>
             </div>

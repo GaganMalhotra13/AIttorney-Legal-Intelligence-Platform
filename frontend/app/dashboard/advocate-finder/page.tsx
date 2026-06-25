@@ -3,6 +3,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Users, Loader2, MapPin, Scale, ExternalLink, Search } from "lucide-react";
 
 const CASE_TYPES = [
@@ -167,9 +169,11 @@ export default function AdvocateFinderPage() {
                       AI Recommendations · {caseType} · {location}
                     </p>
                   </div>
-                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-                    {summary}
-                  </p>
+                  <div className="markdown-result">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {summary}
+  </ReactMarkdown>
+</div>
                 </motion.div>
 
                 {/* Raw search results */}

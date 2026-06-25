@@ -3,6 +3,8 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { contractsAPI, api } from "@/lib/api";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Upload, FileText, Loader2,
   CheckCircle2, MessageSquare, Send, Trash2
@@ -250,14 +252,16 @@ export default function ContractAuditPage() {
             </div>
 
             {/* Gemini analysis */}
-            {analysis && (
-              <div className="card p-6">
-                <p className="label mb-4">AI Deep Analysis · {role} Perspective</p>
-                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line result-text">
-                  {analysis}
-                </p>
-              </div>
-            )}
+           {analysis && (
+  <div className="card p-6">
+    <p className="label mb-4">AI Deep Analysis · {role} Perspective</p>
+    <div className="markdown-result">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {analysis}
+      </ReactMarkdown>
+    </div>
+  </div>
+)}
 
             {/* Chat */}
             <div className="card p-5">
@@ -273,11 +277,14 @@ export default function ContractAuditPage() {
                 {chat.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm
-                      ${msg.role === "user"
-                        ? "bg-coral-600 text-white rounded-br-sm"
-                        : "bg-bg2 text-slate-700 border border-slate-100 rounded-bl-sm"}`}>
-                      {msg.content}
-                    </div>
+  ${msg.role === "user"
+    ? "bg-coral-600 text-white rounded-br-sm"
+    : "bg-bg2 text-slate-700 border border-slate-100 rounded-bl-sm markdown-result markdown-result-chat"}`}>
+  {msg.role === "ai"
+    ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+    : msg.content
+  }
+</div>
                   </div>
                 ))}
                 {chatLoad && (
