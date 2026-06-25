@@ -42,12 +42,23 @@ export interface CaseRequest {
   language?: string;
   incident_date?: string;
 }
-export const casesAPI = {
-  analyze: (data: CaseRequest) =>
-    api.post("/api/cases/analyze", data),
-  history: () =>
-    api.get("/api/cases/history"),
-};
+
+export interface Source {
+  id?: string;
+  title?: string;
+  url?: string;
+  excerpt?: string;
+}
+
+export interface Landmark {
+  title: string;
+  description: string;
+  date?: string;
+}
+
+export interface ScoreData {
+  [key: string]: unknown;
+}
 
 // ── Brain Modules ─────────────────────────────────────────────
 export const brainAPI = {
@@ -120,4 +131,27 @@ export const trackerAPI = {
   updateStatus: (id: string, status: string) =>
     api.patch(`/api/tracker/${id}/status?status=${status}`),
   delete:       (id: string)     => api.delete(`/api/tracker/${id}`),
+};
+export interface CaseResponse {
+  id?:        string;
+  query:      string;
+  analysis:   string;
+  win_prob:   number;
+  grade:      string;
+  laws:       string;
+  sources:    Source[];
+  landmarks:  Landmark[];
+  score_data: ScoreData;
+}
+export const casesAPI = {
+  analyze: (data: CaseRequest) =>
+    api.post<CaseResponse>("/api/cases/analyze", data),
+  history: () =>
+    api.get("/api/cases/history"),
+  stats:   () =>
+    api.get("/api/cases/stats"),
+  getById: (id: string) =>
+    api.get<CaseResponse>(`/api/cases/${id}`),
+  delete:  (id: string) =>
+    api.delete(`/api/cases/${id}`),
 };

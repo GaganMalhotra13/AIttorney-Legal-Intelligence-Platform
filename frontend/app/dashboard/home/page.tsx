@@ -4,11 +4,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { analyticsAPI } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { casesAPI } from "@/lib/api";
 import {
   Landmark, FileText, PenLine, Map, History,
   BarChart2, FolderOpen, Calendar, ArrowRight,
   TrendingUp, Scale, Clock, Zap, Award,
-  AlertTriangle, CheckCircle2, ChevronRight
+  AlertTriangle, CheckCircle2, ChevronRight, Loader2
 } from "lucide-react";
 
 const FEATURES = [
@@ -137,6 +139,21 @@ export default function HomeDashboard() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+  const router = useRouter();
+const { setCaseResult, setLiveContext } = useStore();
+const [openingId, setOpeningId] = useState<string | null>(null);
+
+const openSaved = async (id: string) => {
+  setOpeningId(id);
+  try {
+    const { data } = await casesAPI.getById(id);
+    setCaseResult(data);
+    setLiveContext(data.analysis);
+    router.push("/dashboard/case-mirror");
+  } catch {
+    setOpeningId(null);
+  }
+};
 
   const firstName = user?.name?.split(" ")[0] || "there";
 
@@ -259,11 +276,17 @@ export default function HomeDashboard() {
                         {c.grade}
                       </p>
                     </div>
-                    <Link href="/dashboard/case-mirror"
-                      className="text-xs text-coral-500 hover:text-coral-700
-                                 flex items-center gap-0.5 transition-colors">
-                      Re-analyze <ArrowRight className="w-3 h-3" />
-                    </Link>
+                    <button
+  onClick={() => openSaved(c._id)}
+  disabled={openingId === c._id}
+  className="text-xs text-coral-500 hover:text-coral-700
+             flex items-center gap-0.5 transition-colors disabled:opacity-50"
+>
+  {openingId === c._id
+    ? <Loader2 className="w-3 h-3 animate-spin" />
+    : <>View <ArrowRight className="w-3 h-3" /></>
+  }
+</button>
                   </div>
                 </motion.div>
               );
