@@ -28,7 +28,12 @@ def _clean_text(raw: str) -> str:
     text = re.sub(r'\s+', ' ', raw)
     text = re.sub(r'\[(\d+)\]', r'[¶\1]', text)  # preserve paragraph refs
     return text.strip()
-
+def _safe_decode(resp) -> str:
+    """Decode response bytes as UTF-8, replacing any malformed sequences instead of garbling."""
+    try:
+        return resp.content.decode("utf-8", errors="replace")
+    except Exception:
+        return resp.text
 
 def search_indiankanoon(query: str, max_results: int = 8) -> list[dict]:
     """
@@ -47,10 +52,13 @@ def search_indiankanoon(query: str, max_results: int = 8) -> list[dict]:
             headers={"Accept": "text/html"}
         )
         resp.raise_for_status()
+        resp.encoding = "utf-8"          # ← ADD THIS LINE
+
     except Exception as e:
         return []
 
-    soup    = BeautifulSoup(resp.text, "lxml")
+    soup    = BeautifulSoup(_safe_decode(resp), "lxml")
+
     results = []
 
     for result_div in soup.select(".result")[:max_results]:
@@ -118,10 +126,12 @@ def fetch_judgment_text(doc_id: str, max_chars: int = 6000) -> str:
     try:
         resp = httpx.get(_scraper_url(url), timeout=30)
         resp.raise_for_status()
+        resp.encoding = "utf-8"          # ← ADD THIS LINE
+
     except Exception:
         return ""
 
-    soup = BeautifulSoup(resp.text, "lxml")
+    soup = BeautifulSoup(_safe_decode(resp), "lxml")
 
     # Remove noise elements
     for el in soup.select(".docsource, .doc_citations, script, style, nav"):
