@@ -12,7 +12,18 @@ export default function HistoryPage() {
 
   useEffect(() => {
     historyAPI.cases()
-  .then((r) => setCases(r.data.cases))      .catch(() => {})
+      .then((r) => {
+        const payload = r.data;
+        const normalized = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.cases)
+          ? payload.cases
+          : [];
+        setCases(normalized);
+      })
+      .catch(() => {
+        setCases([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
