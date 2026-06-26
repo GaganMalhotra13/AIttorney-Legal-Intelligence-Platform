@@ -17,7 +17,13 @@ load_dotenv()
 from routers import auth, cases, contracts, notices, brain, lawyers, roadmap
 from routers import analytics, documents, tracker          # ← MISSING
 from database import ping_db
+from fastapi import Request
+from fastapi.responses import Response
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="AIttorney API",
     description="Legal Intelligence Platform — 11 AI Modules · 18+ Sources · Landmark Judgments",
@@ -25,6 +31,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,9 +45,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 @app.middleware("http")
-async def utf8_middleware(request: Request, call_next):
+async def security_headers(request: Request, call_next):
     response = await call_next(request)
-    response.headers["Content-Type"] = "application/json; charset=utf-8"
+    response.headers["X-Content-Type-Options"]  = "nosniff"
+    response.headers["X-Frame-Options"]          = "DENY"
+    response.headers["X-XSS-Protection"]         = "1; mode=block"
+    response.headers["Referrer-Policy"]           = "strict-origin-when-cross-origin"
+    response.headers["Content-Type"]              = "application/json; charset=utf-8"
     return response
 # ── Routers ───────────────────────────────────────────────────
 app.include_router(auth.router)
@@ -56,18 +68,33 @@ app.include_router(tracker.router)                         # ← MISSING
 # ── Startup ───────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup():
+    # JWT secret validation
+    jwt_secret = os.getenv("JWT_SECRET", "")
+    if len(jwt_secret) < 32:
+        raise RuntimeError(
+            "JWT_SECRET must be at least 32 characters. "
+            "Generate: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+
+    # MongoDB
     try:
         await ping_db()
         print("✅ MongoDB connected")
     except Exception as e:
         print(f"❌ MongoDB failed: {e}")
 
+    # Redis
+    from utils.cache import cache_ping
+    redis_ok = await cache_ping()
+    print(f"{'✅' if redis_ok else '⚠️ '} Redis: {'connected' if redis_ok else 'using in-memory fallback'}")
+
+    # Feature flags
     scraper = bool(os.getenv("SCRAPER_API_KEY"))
     groq    = bool(os.getenv("GROQ_API_KEY"))
     cohere  = bool(os.getenv("COHERE_API_KEY"))
-    print(f"🔍 IndianKanoon scraping:    {'✅ Active' if scraper else '⚠️  Disabled'}")
-    print(f"⚡ Groq compression:         {'✅ Active' if groq   else '⚠️  Disabled'}")
-    print(f"🎯 Cohere reranking:         {'✅ Active' if cohere else '⚠️  Disabled'}")
+    print(f"🔍 IndianKanoon: {'✅' if scraper else '⚠️  add SCRAPER_API_KEY'}")
+    print(f"⚡ Groq:         {'✅' if groq   else '⚠️  add GROQ_API_KEY'}")
+    print(f"🎯 Cohere:       {'✅' if cohere else '⚠️  add COHERE_API_KEY'}")
 
 # ── Health ────────────────────────────────────────────────────
 @app.get("/")
@@ -88,7 +115,14 @@ async def root():
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {"status": "ok"}
-
+@app.get("/health/cache")
+async def cache_health():
+    from utils.cache import cache_ping
+    ok = await cache_ping()
+    return {
+        "status":  "redis" if ok else "in-memory",
+        "healthy": True,
+    }
 @app.get("/health/scraper")
 async def scraper_health():
     try:

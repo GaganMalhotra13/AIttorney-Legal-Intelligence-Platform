@@ -8,6 +8,10 @@ import bcrypt, os
 from jose import jwt, JWTError
 from database import users_col, refresh_tokens_col
 import secrets
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 router   = APIRouter(prefix="/api/auth", tags=["auth"])
 SECRET   = os.getenv("JWT_SECRET")
@@ -15,6 +19,7 @@ ALG      = "HS256"
 ACCESS_EXP  = 60 * 60        # 1 hour
 REFRESH_EXP = 60 * 60 * 24 * 30  # 30 days
 security = HTTPBearer()
+limiter = Limiter(key_func=get_remote_address)
 
 # ── Token helpers ─────────────────────────────────────────────
 def make_access_token(user_id: str, email: str) -> str:
@@ -77,7 +82,9 @@ class UpdateProfileBody(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────
 @router.post("/register")
-async def register(body: RegisterBody):
+@limiter.limit("5/minute")              # ← 5 registrations per minute per IP
+
+async def register(request: Request, body: RegisterBody):
     if await users_col.find_one({"email": body.email}):
         raise HTTPException(400, "Email already registered")
     if len(body.password) < 6:
@@ -116,7 +123,8 @@ async def register(body: RegisterBody):
 
 
 @router.post("/login")
-async def login(body: LoginBody):
+@limiter.limit("10/minute") 
+async def login(request: Request, body: LoginBody, response: Response):
     user = await users_col.find_one({"email": body.email})
     if not user:
         raise HTTPException(401, "Invalid credentials")
@@ -135,6 +143,22 @@ async def login(body: LoginBody):
     access_token  = make_access_token(user_id, user["email"])
     refresh_token = make_refresh_token()
     await save_refresh_token(user_id, refresh_token)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,          # ← JS cannot read this
+        secure=True,            # ← HTTPS only
+        samesite="lax",
+        max_age=ACCESS_EXP,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=REFRESH_EXP,
+    )
 
     return {
         "access_token":  access_token,
@@ -152,8 +176,8 @@ async def login(body: LoginBody):
     }
 
 
-@router.post("/refresh")
-async def refresh(body: RefreshBody):
+@limiter.limit("30/minute")             # ← reasonable for token refresh
+async def refresh(request: Request, body: RefreshBody):
     """Exchange a refresh token for a new access token — no re-login needed."""
     record = await refresh_tokens_col.find_one({
         "token":   body.refresh_token,

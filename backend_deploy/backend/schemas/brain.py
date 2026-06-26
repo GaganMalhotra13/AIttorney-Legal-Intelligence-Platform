@@ -1,19 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from typing import Optional
 
+
 class OpponentRequest(BaseModel):
-    query:        str
-    live_context: str
+    query:        str = Field(..., min_length=5, max_length=2000)
+    live_context: str = Field("", max_length=10000)  # ← cap context size
 
 class EvidenceRequest(BaseModel):
-    query:     str
-    case_type: str
+    query:     str = Field(..., min_length=5, max_length=2000)
+    case_type: str = Field(..., max_length=100)
 
 class SettlementRequest(BaseModel):
-    query:        str
-    claim_amount: float
-    case_type:    str
-    live_context: str
+    query:        str   = Field(..., min_length=5, max_length=2000)
+    claim_amount: float = Field(..., ge=0, le=1_000_000_000)
+    case_type:    str   = Field(..., max_length=100)
+    live_context: str   = Field("", max_length=10000)
+
+class BriefRequest(BaseModel):
+    query:        str = Field(..., min_length=5, max_length=2000)
+    live_context: str = Field("", max_length=10000)
+    score_data:   dict = Field(default_factory=dict)
+    laws_text:    str = Field("", max_length=2000)
+    party_name:   str = Field("Complainant", max_length=100)
 
 class JurisdictionRequest(BaseModel):
     query:    str
@@ -24,12 +32,6 @@ class TimelineRequest(BaseModel):
     score_data: dict
     case_type:  str
 
-class BriefRequest(BaseModel):
-    query:        str
-    live_context: str
-    score_data:   dict
-    laws_text:    str
-    party_name:   str = "Complainant"
 
 class FIRRequest(BaseModel):
     query:        str

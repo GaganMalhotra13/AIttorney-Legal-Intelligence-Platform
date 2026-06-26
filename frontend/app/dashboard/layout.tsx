@@ -180,7 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {sidebarShowLabels && (
                 <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="min-w-0">
                   <p className="font-display font-bold text-navy-900 text-lg leading-none truncate">AI<span className="text-coral-600">ttorney</span></p>
-                  <p className="font-mono text-[9px] text-slate-400 tracking-widest uppercase mt-0.5">v7 · Legal AI</p>
+                  <p className="font-mono text-[9px] text-slate-400 tracking-widest uppercase mt-0.5">Intelligent Legal AI</p>
                 </motion.div>
               )}
             </AnimatePresence>

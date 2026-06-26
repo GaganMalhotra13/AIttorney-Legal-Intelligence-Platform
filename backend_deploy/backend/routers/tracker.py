@@ -74,21 +74,25 @@ async def get_court_dates(user=Depends(get_current_user)):
 async def update_status(
     date_id: str,
     status:  str,
-    user=Depends(get_current_user)
+    user=Depends(get_current_user),
 ):
     valid = ["upcoming", "completed", "postponed", "cancelled"]
     if status not in valid:
         raise HTTPException(400, f"Status must be one of: {valid}")
-    await tracker_col.update_one(
-        {"_id": ObjectId(date_id), "username": user["email"]},
+    result = await tracker_col.update_one(
+        {"_id": ObjectId(date_id), "username": user["email"]},  # ← ADD username
         {"$set": {"status": status}}
     )
+    if result.matched_count == 0:
+        raise HTTPException(404, "Court date not found")
     return {"updated": True}
-
 
 @router.delete("/{date_id}")
 async def delete_date(date_id: str, user=Depends(get_current_user)):
-    await tracker_col.delete_one(
-        {"_id": ObjectId(date_id), "username": user["email"]}
-    )
+    result = await tracker_col.delete_one({
+        "_id":      ObjectId(date_id),
+        "username": user["email"],          # ← ADD username
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(404, "Court date not found")
     return {"deleted": True}

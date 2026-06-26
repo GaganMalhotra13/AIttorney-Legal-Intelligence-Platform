@@ -13,11 +13,40 @@ These tests verify:
 """
 import sys
 import os
+import importlib.util
 
 # Add project root to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, ROOT_DIR)
 
-from utils.scoring import compute_win_probability
+
+def _load_compute_win_probability():
+    candidate_imports = [
+        ("utils.scoring", "compute_win_probability"),
+        ("scoring", "compute_win_probability"),
+    ]
+    for module_name, attr_name in candidate_imports:
+        try:
+            module = __import__(module_name, fromlist=[attr_name])
+            return getattr(module, attr_name)
+        except (ImportError, AttributeError):
+            continue
+
+    candidate_paths = [
+        os.path.join(ROOT_DIR, "utils", "scoring.py"),
+        os.path.join(ROOT_DIR, "scoring.py"),
+    ]
+    for path in candidate_paths:
+        if os.path.exists(path):
+            spec = importlib.util.spec_from_file_location("scoring_module", path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, "compute_win_probability")
+
+    raise ImportError("Could not import compute_win_probability from utils.scoring or scoring")
+
+
+compute_win_probability = _load_compute_win_probability()
 
 
 class TestWinProbabilityBasics:

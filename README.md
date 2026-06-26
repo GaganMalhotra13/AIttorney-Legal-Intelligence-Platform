@@ -2,7 +2,7 @@
 
 > AI-powered legal research for the Indian legal system. Describe a legal situation in plain English, get win probability, applicable laws, real landmark judgments, and 11 on-demand AI modules — built for the 50 million Indians who can't afford an advocate just to ask "where do I stand?"
 
-**Live Demo:** [aittorney.vercel.app](#) · **API Docs:** [/docs](#) · **Status:** 9.1/10, locally functional, deployed
+**Live Demo:** [https://aittorney-legalintelligence.vercel.app/](#) · **API Docs:** [/docs](#) · **Status:** 9.1/10, locally functional, deployed
 
 ---
 

@@ -16,5 +16,6 @@ beautifulsoup4
 lxml
 cohere
 groq
-
+redis
+slowapi
 pytest

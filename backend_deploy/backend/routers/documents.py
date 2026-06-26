@@ -4,7 +4,7 @@ from middleware.auth import get_current_user
 from database import documents_col
 from datetime import datetime
 import hashlib, base64
-import sys, os
+import sys, os, re
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT not in sys.path: sys.path.insert(0, ROOT)
 from config import MODEL
@@ -37,6 +37,7 @@ Document: {text[:3000]}
             "summary": "Document uploaded", "tags": []
         }
 
+
 @router.post("/upload")
 async def upload_document(
     file:  UploadFile = File(...),
@@ -65,11 +66,12 @@ async def upload_document(
 
     # Store (base64 for small files, reference for large)
     doc_hash = hashlib.md5(content).hexdigest()
-
+    safe_filename = os.path.basename(file.filename or "unknown")
+    safe_filename = re.sub(r"[^\w\s\-_\.]", "", safe_filename)[:255]
     doc = {
         "username":    user["email"],
-        "filename":    file.filename,
-        "label":       label or file.filename,
+        "filename":    safe_filename,
+        "label":       label or safe_filename,
         "size_bytes":  len(content),
         "hash":        doc_hash,
         "content_b64": base64.b64encode(content).decode() if len(content) < 2*1024*1024 else None,

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from middleware.auth import get_current_user
 import sys, os
+from fastapi import Query
+import re
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT not in sys.path:
@@ -23,15 +25,23 @@ def _safe(prompt: str) -> str:
     except Exception as e:
         return f"API Error: {e}"
 
+def _sanitize(value: str, max_len: int = 100) -> str:
+    """Remove any characters that could be used for injection."""
+    cleaned = re.sub(r"[^\w\s\-\./,()&]", "", value)
+    return cleaned[:max_len].strip()
 
 @router.get("/find")
+@router.get("/find")
 async def find_lawyers(
-    case_type: str,
-    location: str,
+    case_type: str = Query(..., max_length=100),
+    location:  str = Query(..., max_length=100),
     user=Depends(get_current_user),
 ):
+    safe_case_type = _sanitize(case_type)
+    safe_location  = _sanitize(location)
+
     ctx, results, _ = get_live_cases(
-        f"best lawyer advocate {case_type} {location} contact"
+        f"best lawyer advocate {safe_case_type} {safe_location} contact"
     )
 
     prompt = (

@@ -14,7 +14,7 @@ async def get_overview(user=Depends(get_current_user)):
     email = user["email"]
 
     # Parallel counts
-    total_cases   = await cases_col.count_documents({"username": email})
+    total_cases = await cases_col.count_documents({"username": email})
     total_audits  = await audits_col.count_documents({"username": email})
     total_notices = await notices_col.count_documents({"username": email})
     upcoming_dates= await tracker_col.count_documents({

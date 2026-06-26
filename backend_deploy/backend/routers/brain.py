@@ -8,6 +8,12 @@ from schemas.brain import (
     JurisdictionRequest, TimelineRequest, BriefRequest,
     FIRRequest, MediationRequest, LimitationRequest, ComparatorRequest
 )
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
 import sys
 import os
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -35,47 +41,58 @@ def _safe(prompt: str) -> str:
 # ── Existing 10 modules ───────────────────────────────────────
 
 @router.post("/opponent")
-async def opponent(b: OpponentRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+
+async def opponent(request: Request, b: OpponentRequest, user=Depends(get_current_user)):
     return {"result": analyze_opponent(b.query, b.live_context)}
 
 @router.post("/evidence")
-async def evidence(b: EvidenceRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def evidence(request: Request, b: EvidenceRequest, user=Depends(get_current_user)):
     return {"result": evidence_checklist(b.query, b.case_type)}
 
 @router.post("/settlement")
-async def settlement(b: SettlementRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def settlement(request: Request, b: SettlementRequest, user=Depends(get_current_user)):
     return {"result": estimate_settlement(b.query, b.claim_amount, b.case_type, b.live_context)}
 
 @router.post("/jurisdiction")
-async def jurisdiction(b: JurisdictionRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def jurisdiction(request: Request, b: JurisdictionRequest, user=Depends(get_current_user)):
     return {"result": jurisdiction_advisor(b.query, b.location)}
 
 @router.post("/timeline")
-async def timeline(b: TimelineRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def timeline(request: Request, b: TimelineRequest, user=Depends(get_current_user)):
     return {"result": case_strength_timeline(b.query, b.score_data, b.case_type)}
 
 @router.post("/brief")
-async def brief(b: BriefRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def brief(request: Request, b: BriefRequest, user=Depends(get_current_user)):
     return {"result": generate_legal_brief(
         b.query, b.live_context, b.score_data, b.laws_text, b.party_name
     )}
 
 @router.post("/fir")
-async def fir(b: FIRRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def fir(request: Request, b: FIRRequest, user=Depends(get_current_user)):
     return {"result": fir_draft(b.query, b.complainant, b.accused_desc, b.location)}
 
 @router.post("/mediation")
-async def mediation(b: MediationRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def mediation(request: Request, b: MediationRequest, user=Depends(get_current_user)):
     return {"result": mediation_script(
         b.query, b.your_position, b.other_party, b.ideal_outcome
     )}
 
 @router.post("/limitation")
-async def limitation(b: LimitationRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def limitation(request: Request, b: LimitationRequest, user=Depends(get_current_user)):
     return {"result": limitation_checker(b.case_type, b.incident_date, b.query)}
 
 @router.post("/compare")
-async def compare(b: ComparatorRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def compare(request: Request, b: ComparatorRequest, user=Depends(get_current_user)):
     return {"result": case_comparator(b.query, b.live_context, b.case_type)}
 
 
@@ -88,7 +105,8 @@ class WhatsAppRequest(BaseModel):
 
 
 @router.post("/analyze-whatsapp")
-async def analyze_whatsapp(body: WhatsAppRequest, user=Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def analyze_whatsapp(request: Request, body: WhatsAppRequest, user=Depends(get_current_user)):
     """
     Analyzes WhatsApp chat exports for legally relevant admissions,
     threats, payment confirmations, or promises.
