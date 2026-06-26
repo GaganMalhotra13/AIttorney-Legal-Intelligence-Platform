@@ -252,4 +252,4 @@ This project is a personal portfolio project. See repository for usage terms.
 
 ---
 
-Built by [Gagan Malhotra](https://github.com/GaganMalhotra13)
+Built by [Gagan Malhotra](https://github.com/GaganMalhotra13)```

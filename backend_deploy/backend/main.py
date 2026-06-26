@@ -41,8 +41,10 @@ app.add_middleware(
         "http://localhost:8501",
     ],
     allow_origin_regex=r"https://aittorney-legalintelligence.*\.vercel\.app",
+        allow_credentials=True,          # ← ADD THIS
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
