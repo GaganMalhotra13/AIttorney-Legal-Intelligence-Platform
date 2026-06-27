@@ -67,74 +67,6 @@ function ScoreGauge({ prob, grade }: { prob: number; grade: string }) {
   );
 }
 
-function ModulePaanel({ moduleKey, query, caseType, claimAmt, liveContext, scoreData }: any) {
-  const [loading, setLoading] = useState(false);
-  const { moduleResults, setModule } = useStore();
-  const result = moduleResults[moduleKey];
-  const mod    = MODULES_LIST.find((m) => m.key === moduleKey)!;
-
-  const run = async () => {
-    setLoading(true);
-    try {
-      let res: any;
-      switch (moduleKey) {
-        case "opponent":     res = await brainAPI.opponent(query, liveContext); break;
-        case "evidence":     res = await brainAPI.evidence(query, caseType); break;
-        case "settlement":   res = await brainAPI.settlement(query, claimAmt, caseType, liveContext); break;
-        case "jurisdiction": res = await brainAPI.jurisdiction(query, "India"); break;
-        case "timeline":     res = await brainAPI.timeline(query, scoreData, caseType); break;
-        case "brief":        res = await brainAPI.brief({ query, live_context: liveContext, score_data: scoreData, laws_text: "", party_name: "Complainant" }); break;
-        case "fir":          res = await brainAPI.fir({ query, location: "India" }); break;
-        case "mediation":    res = await brainAPI.mediation({ query }); break;
-        case "limitation":   res = await brainAPI.limitation({ case_type: caseType, incident_date: "Not provided", query }); break;
-        case "compare":      res = await brainAPI.compare(query, liveContext, caseType); break;
-      }
-      setModule(moduleKey, res.data.result);
-    } catch { toast.error(`${mod.label} failed`); }
-    finally   { setLoading(false); }
-  };
-
-  return (
-    <div className="h-full flex flex-col">
-      {!result && !loading && (
-        <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-coral-50 border border-coral-100 flex items-center justify-center mb-4">
-            <mod.icon className="w-5 h-5 text-coral-500" />
-          </div>
-          <p className="font-semibold text-navy-800 text-sm mb-1">{mod.label}</p>
-          <p className="text-slate-400 text-xs mb-6 max-w-xs">{mod.desc}</p>
-          <button onClick={run} className="btn-primary text-sm px-6">
-            Generate {mod.label} →
-          </button>
-        </div>
-      )}
-      {loading && (
-        <div className="flex-1 flex flex-col items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-coral-500 animate-spin mb-4" />
-          <p className="text-slate-400 text-sm">Generating {mod.label}…</p>
-          <div className="mt-4 w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-coral-400 to-coral-600 rounded-full animate-shimmer"
-              style={{ backgroundSize: "200% 100%" }} />
-          </div>
-        </div>
-      )}
-      {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          className="flex-1 overflow-y-auto"
-        >
-          <div className="p-5 bg-bg2 rounded-xl border border-slate-100 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-body">
-            {typeof result === "string" ? result : JSON.stringify(result, null, 2)}
-          </div>
-          <button onClick={() => setModule(moduleKey, "")}
-            className="mt-3 text-xs text-slate-400 hover:text-slate-600 transition-colors">
-            ↺ Regenerate
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
-}
 
 export default function CaseMirrorPage() {
   const [query,    setQuery]    = useState("");
@@ -251,9 +183,13 @@ export default function CaseMirrorPage() {
           </div>
           <div className="w-full sm:w-40">
   <label className="label">Incident Date</label>
-            <input type="date" value={incDate} onChange={(e) => setIncDate(e.target.value)}
-              className="input py-2 text-xs" />
-          </div>
+<input
+  type="date"
+  value={incDate}
+  onChange={(e) => setIncDate(e.target.value)}
+  max={new Date().toISOString().split("T")[0]}   // ← today's date as max
+  className="input py-2 text-xs"
+/>          </div>
           <motion.button
             onClick={analyze} disabled={loading}
             whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}
@@ -565,7 +501,7 @@ className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-xs font-medium whites
       transition={{ duration: 0.2 }}
       className="h-full"
     >
-      <ModulePaanel
+      <ModulePanel
         moduleKey={activeModule}
         query={query}
         caseType={caseType}

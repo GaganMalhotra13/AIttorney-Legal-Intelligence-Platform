@@ -12,6 +12,7 @@ interface Doc {
   _id:      string;
   filename: string;
   label:    string;
+  snippet?:  string;
   size_bytes: number;
   created_at: string;
   metadata: {
@@ -88,7 +89,22 @@ export default function DocumentVaultPage() {
       setSearching(false);
     }
   };
+// Add this function inside DocumentVaultPage component, before return
+const highlightSnippet = (snippet: string, query: string) => {
+  if (!snippet || !query) return snippet;
+  const words = query.split(" ").filter(w => w.length > 2);
+  if (words.length === 0) return snippet;
 
+  const regex = new RegExp(`(${words.map(w =>
+    w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "gi");
+
+  const parts = snippet.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part)
+      ? <mark key={i} className="bg-coral-100 text-coral-800 rounded px-0.5 font-medium not-italic">{part}</mark>
+      : part
+  );
+};
   const handleDelete = async (id: string) => {
     try {
       await documentsAPI.delete(id);
@@ -266,6 +282,14 @@ export default function DocumentVaultPage() {
                         <p className="text-xs text-slate-500 line-clamp-1 mb-2">
                           {doc.metadata?.summary || "No summary"}
                         </p>
+                        {results !== null && doc.snippet && (
+                            <p className="text-xs font-mono text-coral-600 bg-coral-50 px-2 py-1
+                                           rounded-lg mt-1.5 border border-coral-100 line-clamp-2">
+                              {doc.snippet}
+                            </p>
+                          )}
+
+                                
                         <div className="flex items-center gap-3 flex-wrap">
                           {doc.metadata?.parties?.slice(0, 2).map((p) => (
                             <span key={p} className="flex items-center gap-1
@@ -286,7 +310,16 @@ export default function DocumentVaultPage() {
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-
+{results !== null && doc.snippet && (
+  <div className="mt-2 px-2 py-1.5 rounded-lg bg-coral-50
+                  border border-coral-100 text-xs text-slate-600
+                  leading-relaxed font-mono">
+    <span className="text-coral-500 font-sans font-semibold mr-1">
+      Found:
+    </span>
+    {highlightSnippet(doc.snippet, query)}
+  </div>
+)}
                     {/* Tags */}
                     {doc.metadata?.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
@@ -344,6 +377,7 @@ className="card p-5 lg:sticky lg:top-4"
                       </p>
                     </div>
                   )}
+                  
 
                   {/* Parties */}
                   {selected.metadata?.parties?.length > 0 && (

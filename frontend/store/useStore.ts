@@ -107,7 +107,18 @@ export const useStore = create<AppStore>()(
     }),
     {
       name: "aittorney-store",
-      partialize: (s) => ({ user: s.user }),
+      partialize: (s) => ({ 
+        user:          s.user,
+        caseResult:    s.caseResult,
+        liveContext:   s.liveContext,
+        moduleResults: s.moduleResults,
+        caseQuery:     s.caseQuery,
+        caseType:      s.caseType,
+        claimAmt:      s.claimAmt,
+        location:      s.location,
+        activeModule:  s.activeModule,
+
+       }),
     }
   )
 );

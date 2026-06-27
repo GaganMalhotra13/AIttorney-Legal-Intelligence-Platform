@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Calendar, Plus, Loader2, Clock, Scale,
   CheckCircle2, XCircle, AlertCircle,
@@ -423,10 +425,11 @@ function DateCard({
                   <p className="label mb-3 flex items-center gap-1.5">
                     <ListChecks className="w-3 h-3" /> AI Preparation Checklist
                   </p>
-                  <div className="bg-bg2 rounded-xl p-4 text-xs text-slate-600
-                                  leading-relaxed whitespace-pre-line">
-                    {date.preparation}
-                  </div>
+                  <div className="bg-bg2 rounded-xl p-4 markdown-result">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {date.preparation}
+  </ReactMarkdown>
+</div>
                 </div>
               )}
 

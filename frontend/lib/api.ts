@@ -122,7 +122,7 @@ export const documentsAPI = {
     }),
   list:   () => api.get("/api/documents/"),
   search: (query: string) =>
-    api.post("/api/documents/search", null, { params: { query } }),
+      api.get(`/api/documents/search`, { params: { q: query } }),
   delete: (id: string) => api.delete(`/api/documents/${id}`),
 };
 

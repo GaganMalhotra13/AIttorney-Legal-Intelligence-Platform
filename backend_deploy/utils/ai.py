@@ -98,24 +98,28 @@ For each: Full case name, court, year, and one sentence on why it directly appli
 If none found in context, say so explicitly. Never fabricate case names or citations.
 """)
 
-
 def audit_contract(text: str, role: str) -> str:
-    return _safe(f"""
-Strict legal auditor reviewing a contract for a {role} in India.
+    return _safe(f"""You are a strict legal auditor reviewing a contract for a {role} in India.
 
-Find exactly 3 critical issues. For each use EXACTLY this format:
+Find exactly 3 critical issues. For EACH issue use EXACTLY this format with no deviation:
 
 SEVERITY: [HIGH/MEDIUM/LOW]
-CLAUSE: [Name of clause]
-PROBLEM: [Why this hurts a {role} specifically — be concrete]
-EXCERPT: [Quote the relevant part of the contract — max 1 sentence]
-FAIR VERSION: [What a balanced clause would say instead]
+CLAUSE: [Short clause name]
+PROBLEM: [Why this hurts a {role} specifically — one concrete sentence]
+EXCERPT: [Quote the exact relevant text from contract — max one sentence]
+FAIR VERSION: [What a balanced clause would say instead — one sentence]
 
-Then:
-OVERALL VERDICT: [One sentence]
-TOP PRIORITY TO NEGOTIATE: [The single most important clause to push back on]
+After the 3 issues, add:
+OVERALL VERDICT: [One sentence summary of the contract overall]
+TOP PRIORITY TO NEGOTIATE: [Single most important clause to push back on]
 
-Contract text:
+Rules:
+- Do NOT use markdown headers, bullets, or bold
+- Do NOT add any text outside this exact format
+- Each SEVERITY/CLAUSE/PROBLEM/EXCERPT/FAIR VERSION must be on its own line
+- Leave one blank line between each issue
+
+Contract text ({role} perspective):
 {text[:6000]}
 """)
 def audit_contract_structured(text: str, role: str) -> dict:
@@ -235,57 +239,64 @@ Format:
 """)
 
 
-def draft_notice(
-    context: str,
-    sender: str,
-    recipient: str,
-    tone: str,
-) -> str:
-    tones = {
-        "Professional": "Formal and measured. Requests compliance with goodwill. Polite but firm.",
-        "Strict":       "Assertive. Hard 15-day deadline. Consequences clearly implied.",
-        "Final Warning":"Last chance. Imminent legal action. No ambiguity whatsoever.",
-    }
-    return _safe(f"""
-Draft a formal legal notice. Educational purposes only.
-Issue: {context}
-From: {sender or '[Sender Full Name]'}
-To:   {recipient or '[Recipient Full Name]'}
-Tone: {tones.get(tone, tones['Professional'])}
-Jurisdiction: India
+def draft_notice(context: str, sender: str, recipient: str, tone: str) -> str:
+    tone_instructions = {
+        "Professional": "formal and measured tone, leaving room for amicable resolution",
+        "Strict": "firm and assertive tone, with a hard deadline and clear legal consequences",
+        "Final Warning": "final warning tone — this is the last communication before legal action, unambiguous",
+    }.get(tone, "professional tone")
 
-Use EXACTLY this structure:
+    return _safe(f"""You are a senior Indian legal advocate drafting a formal legal notice.
 
-[SENDER NAME]
-[Address]
-[Date]
+Use this information:
+{context}
+
+Draft a complete, professionally formatted legal notice following EXACTLY this structure:
+
+[City], [Date: use today's date or leave as __________]
 
 TO,
-[RECIPIENT NAME]
-[Address]
+[Recipient name and designation]
+[Recipient address — use provided address or "__________, __________, __________"]
 
-SUBJECT: Legal Notice regarding [brief subject]
+SUBJECT: LEGAL NOTICE FOR [NOTICE TYPE IN CAPS]
 
 Sir/Madam,
 
-[BACKGROUND — 2 sentences on the facts]
+Under instructions from and on behalf of my client, [Sender Full Name], [Sender Address], 
+I [Advocate Name — leave as "__________"] do hereby serve upon you this legal notice:
 
-[GRIEVANCE — What went wrong, specific dates and amounts if mentioned]
+1. FACTS OF THE CASE:
+[Write 2-3 numbered paragraphs detailing the facts chronologically, using provided details.
+Include specific dates, amounts, and actions. Use "on __________ (date)" where date unknown.]
 
-[LEGAL BASIS — Reference applicable law without being overly technical]
+2. LEGAL VIOLATIONS:
+[Cite 2-3 specific applicable Indian laws/sections violated, e.g.:
+- Section ___ of the [Relevant Act]
+- Consumer Protection Act, 2019 (if applicable)
+- Indian Contract Act, 1872 Section 73 (if breach of contract)]
 
-[DEMAND — Exactly what you want them to do and by when]
+3. DEMAND / RELIEF SOUGHT:
+[State the exact relief demanded clearly — use provided relief sought.
+Include specific amounts where provided, or "₹__________" where unknown.]
 
-[CONSEQUENCE — What happens if they don't comply]
+4. NOTICE PERIOD:
+You are hereby called upon to comply with the above demands within [X] days of receipt 
+of this notice, failing which my client shall be constrained to initiate appropriate 
+legal proceedings before the competent court/forum at your risk, cost and consequences.
 
 Yours faithfully,
-[Sender Name]
+
+[Advocate Name]
+[Advocate's Office Address]
+[Bar Council Enrollment No: __________]
+
+On behalf of: {sender}
 
 ---
-Generated by AIttorney for educational purposes only.
-Have this reviewed by a licensed advocate before sending.
+NOTE: This notice has been prepared for educational reference. Underlined blank spaces 
+(__________) require manual completion with verified information before dispatch.
 """)
-
 
 def generate_roadmap(situation: str, jurisdiction: str) -> str:
     return _safe(f"""

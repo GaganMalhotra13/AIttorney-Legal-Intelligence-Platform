@@ -122,27 +122,27 @@ Every item must relate directly to: {query}
 Case type: {case_type}
 
 ### 🔴 Critical — Must Have (Case fails without these)
-[ ] [Document] — [Why essential + exactly how/where to get it]
-[ ] [Document] — [...]
-[ ] [Document] — [...]
+        [Document] — [Why essential + exactly how/where to get it]
+        [Document] — [...]
+        [Document] — [...]
 
 ### 🟡 Important — Should Have
-[ ] [Document] — [How it strengthens + how to obtain]
-[ ] [Document] — [...]
+        [Document] — [How it strengthens + how to obtain]
+        [Document] — [...]
 
 ### 🟢 Supportive — Good to Have
-[ ] [Document] — [Corroborative value]
-[ ] [Document] — [...]
+        [Document] — [Corroborative value]
+        [Document] — [...]
 
 ### 📱 Digital Evidence
-[ ] WhatsApp messages — [Specifically what to screenshot and preserve]
-[ ] Emails — [What email chain is relevant]
-[ ] UPI/bank records — [Exactly which transactions to print]
-[ ] Call logs — [If relevant]
+        WhatsApp messages — [Specifically what to screenshot and preserve]
+        Emails — [What email chain is relevant]
+        UPI/bank records — [Exactly which transactions to print]
+        Call logs — [If relevant]
 
 ### 👥 Witnesses
-[ ] [Type of witness] — [What they can specifically testify to]
-[ ] [Another witness type] — [Testimony scope]
+        [Type of witness] — [What they can specifically testify to]
+        [Another witness type] — [Testimony scope]
 
 ### ⚠️ Preserve Immediately
 [Time-sensitive evidence that can disappear — act within 24-48 hours]

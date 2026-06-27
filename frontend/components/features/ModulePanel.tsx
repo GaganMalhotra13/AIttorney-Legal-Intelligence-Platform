@@ -130,40 +130,95 @@ export default function ModulePanel({
   }
 
   // ── Result ────────────────────────────────────────────────
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="h-full flex flex-col"
-    >
-      {/* Module header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-coral-50 border border-coral-100
-                          flex items-center justify-center">
-            <mod.icon className="w-3.5 h-3.5 text-coral-500" />
-          </div>
-          <p className="font-semibold text-navy-800 text-sm">{mod.label}</p>
+  // ── Result ────────────────────────────────────────────────
+return (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="h-full flex flex-col"
+  >
+    {/* Module header */}
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-lg bg-coral-50 border border-coral-100
+                        flex items-center justify-center">
+          <mod.icon className="w-3.5 h-3.5 text-coral-500" />
         </div>
-        <button
-          onClick={run}
-          className="text-xs text-slate-400 hover:text-coral-600 transition-colors
-                     flex items-center gap-1"
-        >
-          ↺ Regenerate
-        </button>
+        <p className="font-semibold text-navy-800 text-sm">{mod.label}</p>
       </div>
+      <button
+        onClick={run}
+        className="text-xs text-slate-400 hover:text-coral-600 transition-colors
+                   flex items-center gap-1"
+      >
+        ↺ Regenerate
+      </button>
+    </div>
 
-      {/* Result with full markdown rendering */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-5 bg-bg2 rounded-xl border border-slate-100 markdown-result">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {typeof result === "string"
-              ? result
-              : JSON.stringify(result, null, 2)}
-          </ReactMarkdown>
-        </div>
+    {/* Result — single clean markdown render */}
+    <div className="flex-1 overflow-y-auto">
+      <div className="p-5 bg-bg2 rounded-xl border border-slate-100 markdown-result">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            li: ({ node, checked, children, ...props }: any) => {
+              if (checked !== null && checked !== undefined) {
+                return (
+                  <li className="flex items-start gap-2 mb-1.5 list-none" {...props}>
+                    <span className={`mt-0.5 w-4 h-4 rounded border flex-shrink-0
+                                     flex items-center justify-center text-xs
+                                     ${checked
+                                       ? "bg-teal-500 border-teal-500 text-white"
+                                       : "border-slate-300 bg-white"}`}>
+                      {checked ? "✓" : ""}
+                    </span>
+                    <span className="text-sm text-slate-700 leading-relaxed">{children}</span>
+                  </li>
+                );
+              }
+              return <li className="mb-1 text-sm text-slate-700" {...props}>{children}</li>;
+            },
+            h3: ({ children, ...props }: any) => (
+              <h3 className="font-bold text-navy-800 text-sm mt-4 mb-2 pb-1
+                             border-b border-slate-200 flex items-center gap-1.5" {...props}>
+                {children}
+              </h3>
+            ),
+            h2: ({ children, ...props }: any) => (
+              <h2 className="font-bold text-navy-900 text-base mt-5 mb-2 pb-1
+                             border-b-2 border-coral-200" {...props}>
+                {children}
+              </h2>
+            ),
+            strong: ({ children, ...props }: any) => (
+              <strong className="font-semibold text-navy-800" {...props}>{children}</strong>
+            ),
+            p: ({ children, ...props }: any) => (
+              <p className="text-sm text-slate-700 leading-relaxed mb-2" {...props}>{children}</p>
+            ),
+            table: ({ children, ...props }: any) => (
+              <div className="overflow-x-auto my-3">
+                <table className="w-full text-xs border-collapse rounded-lg overflow-hidden" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            th: ({ children, ...props }: any) => (
+              <th className="bg-navy-900 text-white text-left px-3 py-2 font-semibold text-xs" {...props}>
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }: any) => (
+              <td className="border-t border-slate-100 px-3 py-2 text-slate-600" {...props}>
+                {children}
+              </td>
+            ),
+          }}
+        >
+          {typeof result === "string" ? result : JSON.stringify(result, null, 2)}
+        </ReactMarkdown>
       </div>
-    </motion.div>
-  );
+    </div>
+  </motion.div>
+);
 }

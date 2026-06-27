@@ -77,7 +77,7 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-coral-600 flex items-center justify-center shadow-coral"><Scale className="w-5 h-5 text-white" /></div>
             <span className="font-display text-2xl font-bold text-white tracking-tight">AI<span className="text-coral-400">ttorney</span></span>
           </div>
-          <p className="font-mono text-2xs tracking-widest uppercase text-white/30 ml-[52px]">Legal Intelligence Platform · v7</p>
+          <p className="font-mono text-2xs tracking-widest uppercase text-white/30 ml-[52px]">Legal Intelligence Platform </p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }} className="relative z-10">
