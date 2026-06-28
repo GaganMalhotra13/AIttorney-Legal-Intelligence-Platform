@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import {
@@ -32,10 +33,71 @@ const STATUS = [
   { label: "11 AI Modules",     live: true },
   { label: "FastAPI Backend",   live: true },
 ];
+type NavItemProps = {
+  href: string;
+  icon: any;
+  label: string;
+  pathname: string;
+  showLabel: boolean;
+};
 
+const NavItem = memo(function NavItem({
+  href,
+  icon: Icon,
+  label,
+  pathname,
+  showLabel,
+}: NavItemProps) {
+  const active =
+    pathname === href ||
+    (href !== "/dashboard/home" && pathname.startsWith(href));
+
+  return (
+    <Link href={href}>
+      <motion.div
+        whileHover={{ x: showLabel ? 2 : 0 }}
+        title={!showLabel ? label : undefined}
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+        transition-all cursor-pointer group
+        ${
+          active
+            ? "bg-coral-50 text-coral-700 border border-coral-100"
+            : "text-slate-500 hover:text-navy-800 hover:bg-bg2"
+        }`}
+      >
+        <Icon
+          className={`w-4 h-4 flex-shrink-0 ${
+            active
+              ? "text-coral-600"
+              : "text-slate-400 group-hover:text-navy-600"
+          }`}
+        />
+
+        <AnimatePresence>
+          {showLabel && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 truncate"
+            >
+              {label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+
+        {active && showLabel && (
+          <ChevronRight className="w-3 h-3 text-coral-400 flex-shrink-0" />
+        )}
+      </motion.div>
+    </Link>
+  );
+});
+
+NavItem.displayName = "NavItem";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useStore();
-  const router   = useRouter();
+const user = useStore((s) => s.user);
+const logout = useStore((s) => s.logout);  const router   = useRouter();
   const pathname = usePathname();
 
   const [collapsed,    setCollapsed]    = useState(false);
@@ -72,6 +134,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (expired) {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");
+        localStorage.removeItem("aittorney-store"); // ← ADD THIS
+
         router.replace("/");
         return;
       }
@@ -101,34 +165,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const initials = user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
-  type NavItemProps = (typeof NAV_CORE)[number];
-  const NavItem = ({ href, icon: Icon, label }: NavItemProps) => {
-    const active = pathname === href || (href !== "/dashboard/home" && pathname.startsWith(href));
-    const showLabel = isMobile || !collapsed;
-    return (
-      <Link href={href}>
-        <motion.div
-          whileHover={{ x: showLabel ? 2 : 0 }}
-          title={!showLabel ? label : undefined}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                      transition-all cursor-pointer group
-                      ${active
-                        ? "bg-coral-50 text-coral-700 border border-coral-100"
-                        : "text-slate-500 hover:text-navy-800 hover:bg-bg2"}`}
-        >
-          <Icon className={`w-4 h-4 flex-shrink-0 ${active ? "text-coral-600" : "text-slate-400 group-hover:text-navy-600"}`} />
-          <AnimatePresence>
-            {showLabel && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 truncate">
-                {label}
-              </motion.span>
-            )}
-          </AnimatePresence>
-          {active && showLabel && <ChevronRight className="w-3 h-3 text-coral-400 flex-shrink-0" />}
-        </motion.div>
-      </Link>
-    );
-  };
+ 
 
   const sidebarShowLabels = isMobile || !collapsed;
 
@@ -205,8 +242,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </motion.p>
             )}
           </AnimatePresence>
-          {NAV_CORE.map((item) => <NavItem key={item.href} {...item} />)}
-
+{NAV_CORE.map((item) => (
+  <NavItem
+    key={item.href}
+    {...item}
+    pathname={pathname}
+    showLabel={sidebarShowLabels}
+  />
+))}
           <AnimatePresence>
             {sidebarShowLabels && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -215,8 +258,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </motion.p>
             )}
           </AnimatePresence>
-          {NAV_TOOLS.map((item) => <NavItem key={item.href} {...item} />)}
-        </nav>
+{NAV_TOOLS.map((item) => (
+  <NavItem
+    key={item.href}
+    {...item}
+    pathname={pathname}
+    showLabel={sidebarShowLabels}
+  />
+))}        </nav>
 
         {/* Status — collapsible */}
         <AnimatePresence>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
+import { useStore } from "@/store/useStore";
 import toast from "react-hot-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -21,41 +22,29 @@ const CASE_TYPES = [
 ];
 
 const LOCATIONS = [
-  "Delhi NCR",
-  "Mumbai",
-  "Bangalore",
-  "Chennai",
-  "Kolkata",
-  "Hyderabad",
-  "Pune",
-  "Ahmedabad",
-  "Jaipur",
-  "India (General)",
+  "Delhi NCR", "Mumbai", "Bangalore", "Chennai",
+  "Kolkata", "Hyderabad", "Pune", "Ahmedabad",
+  "Jaipur", "India (General)",
 ];
 
-interface RawResult {
-  title:   string;
-  href:    string;
-  snippet: string;
-}
-
 export default function AdvocateFinderPage() {
-  const [caseType,  setCaseType]  = useState("Consumer Dispute");
-  const [location,  setLocation]  = useState("Delhi NCR");
-  const [summary,   setSummary]   = useState("");
-  const [results,   setResults]   = useState<RawResult[]>([]);
-  const [loading,   setLoading]   = useState(false);
+  const { advocate, setAdvocate, clearAdvocate } = useStore();
+  const [loading, setLoading] = useState(false);
 
   const search = async () => {
     setLoading(true);
-    setSummary("");
-    setResults([]);
+    setAdvocate({ summary: "", results: [] });
     try {
       const { data } = await api.get("/api/lawyers/find", {
-        params: { case_type: caseType, location },
+        params: {
+          case_type: advocate.caseType,
+          location:  advocate.location,
+        },
       });
-      setSummary(data.summary || "");
-      setResults(data.raw_results || []);
+      setAdvocate({
+        summary: data.summary      || "",
+        results: data.raw_results  || [],
+      });
       toast.success("Advocates found!");
     } catch {
       toast.error("Search failed");
@@ -66,27 +55,41 @@ export default function AdvocateFinderPage() {
 
   return (
     <div className="space-y-8 page-enter">
+
       {/* Header */}
-      <div>
-        <div className="eyebrow mb-3">AI-Powered · India Specific</div>
-<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
-          Find an <em className="not-italic text-coral-600">Advocate</em>
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Get AI-curated recommendations for advocates specializing in your case type and location.
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="eyebrow mb-3">AI-Powered · India Specific</div>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold
+                         text-navy-900 tracking-tight mb-3">
+            Find an <em className="not-italic text-coral-600">Advocate</em>
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Get AI-curated recommendations for advocates specializing in your case type and location.
+          </p>
+        </div>
+        {advocate.summary && (
+          <button
+            onClick={() => { clearAdvocate(); toast.success("Cleared"); }}
+            className="btn-ghost text-xs text-slate-400"
+          >
+            ↺ Clear Results
+          </button>
+        )}
       </div>
 
       {/* Search Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div className="card p-6 space-y-4">
+
+        {/* Search form */}
+        <div className="card p-6 space-y-4">
           <p className="font-semibold text-navy-800 text-sm">Search Criteria</p>
 
           <div>
             <label className="label">Case Type</label>
             <select
-              value={caseType}
-              onChange={(e) => setCaseType(e.target.value)}
+              value={advocate.caseType}
+              onChange={(e) => setAdvocate({ caseType: e.target.value })}
               className="input"
             >
               {CASE_TYPES.map((c) => <option key={c}>{c}</option>)}
@@ -96,8 +99,8 @@ export default function AdvocateFinderPage() {
           <div>
             <label className="label">Location</label>
             <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={advocate.location}
+              onChange={(e) => setAdvocate({ location: e.target.value })}
               className="input"
             >
               {LOCATIONS.map((l) => <option key={l}>{l}</option>)}
@@ -116,12 +119,12 @@ export default function AdvocateFinderPage() {
                   <Loader2 className="w-4 h-4 animate-spin" /> Searching…
                 </span>
               : <span className="flex items-center justify-center gap-2">
-                  <Search className="w-4 h-4" /> Find Advocates
+                  <Search className="w-4 h-4" />
+                  {advocate.summary ? "Search Again" : "Find Advocates"}
                 </span>
             }
           </motion.button>
 
-          {/* Disclaimer */}
           <p className="text-xs text-slate-400 leading-relaxed">
             Results are AI-generated from public sources. Always verify credentials
             with the Bar Council of India before engaging an advocate.
@@ -129,12 +132,13 @@ export default function AdvocateFinderPage() {
         </div>
 
         {/* Results */}
-<div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4">
 
           {/* Empty state */}
-          {!loading && !summary && (
+          {!loading && !advocate.summary && (
             <div className="card p-12 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center
+                              justify-center mb-4">
                 <Users className="w-6 h-6 text-slate-300" />
               </div>
               <p className="font-semibold text-slate-400 text-sm">
@@ -155,7 +159,7 @@ export default function AdvocateFinderPage() {
           )}
 
           <AnimatePresence>
-            {summary && !loading && (
+            {advocate.summary && !loading && (
               <>
                 {/* AI Summary */}
                 <motion.div
@@ -166,18 +170,18 @@ export default function AdvocateFinderPage() {
                   <div className="flex items-center gap-2 mb-4">
                     <Scale className="w-4 h-4 text-coral-500" />
                     <p className="label">
-                      AI Recommendations · {caseType} · {location}
+                      AI Recommendations · {advocate.caseType} · {advocate.location}
                     </p>
                   </div>
                   <div className="markdown-result">
-  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-    {summary}
-  </ReactMarkdown>
-</div>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {advocate.summary}
+                    </ReactMarkdown>
+                  </div>
                 </motion.div>
 
                 {/* Raw search results */}
-                {results.length > 0 && (
+                {advocate.results.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -189,7 +193,7 @@ export default function AdvocateFinderPage() {
                       <p className="label">Source Results</p>
                     </div>
                     <div className="space-y-3">
-                      {results.map((r, i) => (
+                      {advocate.results.map((r: any, i: number) => (
                         <motion.div
                           key={i}
                           initial={{ opacity: 0, x: 12 }}

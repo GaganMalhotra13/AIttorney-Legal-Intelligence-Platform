@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,38 +69,60 @@ function ScoreGauge({ prob, grade }: { prob: number; grade: string }) {
 
 
 export default function CaseMirrorPage() {
-  const [query,    setQuery]    = useState("");
-  const [caseType, setCaseType] = useState("Consumer Dispute");
-  const [claimAmt, setClaimAmt] = useState(0);
-  const [location, setLocation] = useState("India (General)");
-  const [incDate,  setIncDate]  = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const [activeModule, setActiveModule]   = useState("opponent");
 
-  const { caseResult, setCaseResult, setLiveContext, liveContext, clearModules } = useStore();
+const {
+  caseResult, setCaseResult,
+  setLiveContext, liveContext,
+  clearModules,
+  caseQuery,
+  setCaseQuery,
+  caseType, setCaseType,
+  claimAmt, setClaimAmt,
+  location, setLocation,
+  activeModule, setActiveModule,
+} = useStore();
 
-  const analyze = async () => {
-    if (!query.trim()) { toast.error("Please describe your situation"); return; }
-    setLoading(true);
+const [localQuery, setLocalQuery] = useState(caseQuery);
+const [incDate, setIncDate] = useState("");
+const [loading, setLoading] = useState(false);
+const [showBreakdown, setShowBreakdown] = useState(false);
+
+// useEffect(() => {
+//   setLocalQuery(caseQuery);
+// }, [caseQuery]);
+
+const analyze = async () => {
+  if (!caseQuery.trim()) { toast.error("Please describe your situation"); return; }
+  setLoading(true);
+  setCaseResult(null);
+  clearModules();
+  try {
+    const { data } = await casesAPI.analyze({
+      query:         caseQuery,   // ← was query
+      case_type:     caseType,
+      claim_amt:     claimAmt,
+      location,
+      incident_date: incDate,
+      language:      "English",
+    });
+    setCaseResult(data);
+    setLiveContext(
+      data.sources?.map((s: any) => `${s.title || ""}\n${s.body || ""}`).join("\n\n") || ""
+    );
+    toast.success("Analysis complete!");
+  } catch (e: any) {
+    toast.error(e.response?.data?.detail || "Analysis failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handleClear = () => {
+    setLocalQuery("");
+    setCaseQuery("");
     setCaseResult(null);
     clearModules();
-    try {
-      const { data } = await casesAPI.analyze({
-        query, case_type: caseType,
-        claim_amt: claimAmt, location,
-        incident_date: incDate, language: "English",
-      });
-      setCaseResult(data);
-      setLiveContext(
-        data.sources?.map((s: any) => `${s.title || ""}\n${s.body || ""}`).join("\n\n") || ""
-      );
-      toast.success("Analysis complete!");
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Analysis failed");
-    } finally {
-      setLoading(false);
-    }
+    setIncDate("");
   };
 
   const prob  = caseResult?.win_prob  ?? 0;
@@ -111,15 +133,26 @@ export default function CaseMirrorPage() {
   return (
     <div className="space-y-8 page-enter">
       {/* Header */}
-      <div>
-        <div className="eyebrow mb-3">Legal Research Terminal · 11 AI Modules · 18 Sources</div>
-<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight leading-tight mb-3">
-          What's Your <em className="not-italic text-coral-600">Legal Situation?</em>
-        </h1>
-        <p className="text-slate-500 text-sm leading-relaxed max-w-2xl">
-          Describe your problem in plain language. Get win probability, applicable laws,
-          opponent analysis, evidence checklist, settlement range — all from 18 live Indian legal databases.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="min-w-0">
+          <div className="eyebrow mb-3">Legal Research Terminal · 11 AI Modules · 18 Sources</div>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight leading-tight mb-3">
+            What's Your <em className="not-italic text-coral-600">Legal Situation?</em>
+          </h1>
+          <p className="text-slate-500 text-sm leading-relaxed max-w-2xl">
+            Describe your problem in plain language. Get win probability, applicable laws,
+            opponent analysis, evidence checklist, settlement range — all from 18 live Indian legal databases.
+          </p>
+        </div>
+        {(localQuery.trim() || caseResult) && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="btn-ghost text-xs text-coral-600 self-start sm:self-end"
+          >
+            ↺ Start Fresh
+          </button>
+        )}
       </div>
 
       {/* Search Hero */}
@@ -132,30 +165,44 @@ export default function CaseMirrorPage() {
         <div className="h-1 bg-gradient-to-r from-coral-500 via-amber-400 to-teal-500" />
 
         <div className="p-8">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="font-mono text-2xs tracking-widest uppercase text-coral-500">
-              Describe your situation in plain language
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-coral-100 to-transparent" />
+          <div className="flex items-start justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-2xs tracking-widest uppercase text-coral-500">
+                Describe your situation in plain language
+              </span>
+              <div className="h-px w-12 bg-gradient-to-r from-coral-100 to-transparent" />
+            </div>
+           
             <span className="font-mono text-2xs text-teal-500 flex items-center gap-1.5">
               <Shield className="w-3 h-3" /> PII Auto-Redacted
             </span>
           </div>
 
           <textarea
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={localQuery}
+            onChange={(e) => setLocalQuery(e.target.value)}
+            onBlur={() => setCaseQuery(localQuery)}
             placeholder="e.g. 'My landlord refuses to return ₹50,000 deposit. I vacated with 30-day written notice 3 months ago. He won't respond to calls or WhatsApp.'"
             rows={3}
-            className="w-full bg-transparent border-none outline-none resize-none text-navy-800
-                       text-base leading-relaxed placeholder:text-slate-300 font-body"
+
+className="w-full bg-white border border-slate-100/70 rounded-xl px-4 py-3
+           shadow-[0_1px_2px_rgba(15,23,42,0.03)]
+           hover:border-slate-200/70
+           focus:border-slate-200
+           focus:shadow-[0_2px_10px_rgba(15,23,42,0.05)]
+           outline-none focus:outline-none focus:ring-0
+           resize-none text-navy-800 text-base leading-relaxed
+           placeholder:text-slate-300 font-body
+           transition-all duration-200"
+
+
             onKeyDown={(e) => { if (e.key === "Enter" && e.metaKey) analyze(); }}
           />
 
           {/* Quick examples */}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
             {EXAMPLES.slice(0, 4).map((ex) => (
-              <button key={ex} onClick={() => setQuery(ex)}
+              <button key={ex} onClick={() => setCaseQuery(ex)}
                 className="px-3 py-1.5 rounded-full bg-bg text-slate-400 border border-slate-100
                            text-xs hover:border-coral-200 hover:text-coral-600 hover:bg-coral-50
                            transition-all font-body">
@@ -503,7 +550,7 @@ className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-xs font-medium whites
     >
       <ModulePanel
         moduleKey={activeModule}
-        query={query}
+        query={caseQuery}
         caseType={caseType}
         claimAmt={claimAmt}
         liveContext={liveContext}

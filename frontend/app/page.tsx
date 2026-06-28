@@ -23,39 +23,88 @@ export default function LoginPage() {
   const [loading,  setLoading]  = useState(false);
   const setUser = useStore((s) => s.setUser);
   const router  = useRouter();
+  const [emailError,    setEmailError]    = useState(false);
+const [passwordError, setPasswordError] = useState(false);
 
   // Autofill demo password ONLY when demo email is typed —
   // does not block or restrict any other email
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setEmail(val);
+      setEmailError(false);      // ← clears red border as user types
+
     if (val === DEMO_EMAIL) {
       setPassword(DEMO_PASSWORD);
     }
   };
 
   const handleLogin = async () => {
-    if (!email.trim())    { toast.error("Enter your email"); return; }
-    if (!password.trim()) { toast.error("Enter your password"); return; }
+  // Client-side validation BEFORE hitting backend
+  if (!email.trim()) {
+    toast.error("Please enter your email");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const { data } = await authAPI.login(email, password);
-      localStorage.setItem("token",         data.access_token  || "");
-      localStorage.setItem("refresh_token", data.refresh_token || "");
-      setUser({
-        email: data.user?.email || email,
-        name:  data.user?.name  || "",
-        token: data.access_token,
-      });
-      toast.success(`Welcome, ${(data.user?.name || "").split(" ")[0]}!`);
-      router.push("/dashboard/home");
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Invalid email or password");
-    } finally {
-      setLoading(false);
+  // Basic email format check — prevents 422 from ever happening
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    toast.error("Please enter a valid email address");
+    setEmailError(true);   // ← triggers red border
+    return;
+  }
+
+  if (!password.trim()) {
+    toast.error("Please enter your password");
+    return;
+  }
+
+  setEmailError(false);
+  setLoading(true);
+
+  try {
+    const { data } = await authAPI.login(email.trim(), password);
+    localStorage.setItem("token",         data.access_token  || "");
+    localStorage.setItem("refresh_token", data.refresh_token || "");
+    setUser({
+      email: data.user?.email || email,
+      name:  data.user?.name  || "",
+      token: data.access_token,
+    });
+    toast.success(`Welcome back, ${(data.user?.name || "").split(" ")[0]}!`);
+    router.push("/dashboard/home");
+  } catch (e: any) {
+    const detail = e.response?.data?.detail;
+
+    // Handle Pydantic 422 array format
+    if (Array.isArray(detail)) {
+      const msg = detail[0]?.msg || "Invalid input";
+      toast.error(msg.replace("Value error, ", ""));
+      setEmailError(true);
+      return;
     }
-  };
+
+    // Handle string errors from our own backend
+    if (typeof detail === "string") {
+      if (detail.toLowerCase().includes("not found") ||
+          detail.toLowerCase().includes("no user") ||
+          detail.toLowerCase().includes("invalid credentials")) {
+        toast.error("No account found with this email");
+        setEmailError(true);
+      } else if (detail.toLowerCase().includes("password") ||
+                 detail.toLowerCase().includes("incorrect")) {
+        toast.error("Incorrect password");
+        setPasswordError(true);
+      } else {
+        toast.error(detail);
+      }
+      return;
+    }
+
+    toast.error("Login failed — please try again");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -131,20 +180,31 @@ export default function LoginPage() {
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="you@example.com"
-                className="input"
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+className={`input transition-colors ${
+    emailError ? "border-red-400 bg-red-50 focus:border-red-500" : ""
+  }`}                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
+              {emailError && (
+  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+    <span>⚠</span> Check your email address
+  </p>
+)}
             </div>
             <div>
               <label className="label">Password</label>
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+  onChange={(e) => { setPassword(e.target.value); setPasswordError(false); }}
                 placeholder="Enter password"
-                className="input"
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
+className={`input transition-colors ${
+    passwordError ? "border-red-400 bg-red-50 focus:border-red-500" : ""
+  }`}                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />{passwordError && (
+  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+    <span>⚠</span> Incorrect password
+  </p>
+)}
             </div>
             <motion.button onClick={handleLogin} disabled={loading} whileHover={{ scale: 1.01, y: -1 }} whileTap={{ scale: 0.99 }}
               className="btn-primary w-full py-3 text-base disabled:opacity-60 disabled:cursor-not-allowed">

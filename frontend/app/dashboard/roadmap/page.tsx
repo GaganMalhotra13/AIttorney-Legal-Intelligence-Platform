@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 import { Map, Loader2, Clock, Scale, ChevronRight } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 const JURISDICTIONS = [
   "India (General)", "Delhi NCR", "Maharashtra",
@@ -35,33 +36,53 @@ function parseSteps(raw: string) {
 }
 
 export default function RoadmapPage() {
-  const [query,        setQuery]        = useState("");
-  const [jurisdiction, setJurisdiction] = useState("India (General)");
-  const [steps,        setSteps]        = useState<any[]>([]);
+const { roadmap, setRoadmap, clearRoadmap } = useStore();
+const [localQuery, setLocalQuery] = useState(roadmap.query);
+
   const [loading,      setLoading]      = useState(false);
 
   const generate = async () => {
-    if (!query.trim()) { toast.error("Describe your situation"); return; }
-    setLoading(true);
-    setSteps([]);
-    try {
-      const { data } = await api.post("/api/roadmap/generate", { situation: query, jurisdiction });
-      setSteps(parseSteps(data.steps || ""));
-      toast.success("Roadmap generated!");
-    } catch { toast.error("Generation failed"); }
-    finally { setLoading(false); }
+    if (!roadmap.query.trim()) { toast.error("Describe your situation"); return; }
+  setLoading(true);
+  setRoadmap({ steps: [] });
+  try {
+    const { data } = await api.post("/api/roadmap/generate", {
+      situation: roadmap.query,
+      jurisdiction: roadmap.jurisdiction
+    });
+    setRoadmap({ steps: parseSteps(data.steps || "") });
+    toast.success("Roadmap generated!");
+  } catch { toast.error("Generation failed"); }
+  finally { setLoading(false); }
+};
+
+  const handleClear = () => {
+    setLocalQuery("");
+    setRoadmap({ query: "" });
+    clearRoadmap();
   };
 
   return (
     <div className="space-y-8 page-enter">
-      <div>
-        <div className="eyebrow mb-3">Procedural Intelligence · India-Specific</div>
-<h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
-          Legal <em className="not-italic text-coral-600">Roadmap</em>
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Get an exact 4-step procedural action plan with applicable laws and timelines.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="min-w-0">
+          <div className="eyebrow mb-3">Procedural Intelligence · India-Specific</div>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
+            Legal <em className="not-italic text-coral-600">Roadmap</em>
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Get an exact 4-step procedural action plan with applicable laws and timelines.
+          </p>
+        </div>
+        {(localQuery.trim() || roadmap.steps.length > 0) && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="btn-ghost text-xs text-coral-600 self-start sm:self-end"
+          >
+            ↺ Start Fresh
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -69,12 +90,17 @@ export default function RoadmapPage() {
   <div className="space-y-4">
           <div className="card p-5">
             <p className="font-semibold text-navy-800 text-sm mb-4">Your Situation</p>
-            <textarea value={query} onChange={(e) => setQuery(e.target.value)}
+            <textarea
+              value={localQuery}
+              onChange={(e) => setLocalQuery(e.target.value)}
+              onBlur={() => setRoadmap({ query: localQuery })} // ← saves to store when user stops typing
               placeholder="e.g. 'Bounced cheque of ₹2 lakhs from business partner…'"
-              rows={5} className="input resize-none mb-4" />
+              rows={5}
+              className="input resize-none mb-4"
+            />
             <div className="mb-4">
               <label className="label">Jurisdiction</label>
-              <select value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)}
+              <select value={roadmap.jurisdiction} onChange={(e) => setRoadmap({ ...roadmap, jurisdiction: e.target.value })}
                 className="input">
                 {JURISDICTIONS.map((j) => <option key={j}>{j}</option>)}
               </select>
@@ -115,7 +141,7 @@ export default function RoadmapPage() {
               </div>
             )}
 
-            {!loading && steps.length === 0 && (
+            {!loading && roadmap.steps.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
                   <Map className="w-5 h-5 text-slate-300" />
@@ -125,13 +151,13 @@ export default function RoadmapPage() {
             )}
 
             <AnimatePresence>
-              {steps.length > 0 && (
+              {roadmap.steps.length > 0 && (
                 <div className="relative">
                   {/* Vertical line */}
                   <div className="absolute left-5 top-8 bottom-8 w-0.5 bg-gradient-to-b from-coral-200 via-amber-200 to-teal-200" />
 
                   <div className="space-y-4">
-                    {steps.map((step, i) => (
+                    {roadmap.steps.map((step, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
