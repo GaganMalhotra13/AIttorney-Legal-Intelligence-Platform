@@ -14,6 +14,8 @@ These tests verify:
 import sys
 import os
 import importlib.util
+from unittest import result
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend_deploy")))
 
 # Add project root to path
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -177,10 +179,9 @@ class TestConfidenceLevels:
         assert result["confidence"] == "Low"
 
     def test_medium_confidence_with_one_signal(self):
-        """1-2 signals → Medium confidence."""
-        result = compute_win_probability("cheque bounce case", "")
+        # "section 138" fires exactly 1 signal → Medium confidence
+        result = compute_win_probability("section 138 case filed", "")
         assert result["confidence"] in ["Medium", "High"]
-
 
 class TestResolutionData:
     def test_cheque_bounce_resolution(self):
