@@ -288,3 +288,8 @@ def search_recent_judgments(topic: str, year_from: int = 2021) -> tuple[str, lis
 
 def get_source_registry() -> list[dict]:
     return [{"domain": d, "tier": t, "category": c} for d, t, c in LEGAL_SOURCES]
+# ─────────────────────────────────────────────
+# AIttorney Legal Intelligence Platform
+# Copyright © 2026 Gagan Malhotra
+# All Rights Reserved — Unauthorized use prohibited
+# ─────────────────────────────────────────────

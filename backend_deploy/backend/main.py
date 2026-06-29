@@ -137,3 +137,8 @@ async def scraper_health():
         }
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+    # ─────────────────────────────────────────────
+# AIttorney Legal Intelligence Platform
+# Copyright © 2026 Gagan Malhotra
+# All Rights Reserved — Unauthorized use prohibited
+# ─────────────────────────────────────────────

@@ -2,6 +2,11 @@
 utils/ai.py — AIttorney v7
 All Gemini calls upgraded to use landmark judgments + compressed context.
 """
+# ─────────────────────────────────────────────
+# AIttorney Legal Intelligence Platform
+# Copyright © 2026 Gagan Malhotra
+# All Rights Reserved — Unauthorized use prohibited
+# ─────────────────────────────────────────────
 from config import MODEL
 import json
 import re
@@ -327,3 +332,8 @@ Timeline: [...]
 
 India-specific. Educational only. Be concrete — no generic advice.
 """)
+# ─────────────────────────────────────────────
+# AIttorney Legal Intelligence Platform
+# Copyright © 2026 Gagan Malhotra
+# All Rights Reserved — Unauthorized use prohibited
+# ─────────────────────────────────────────────

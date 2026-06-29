@@ -43,7 +43,7 @@ RESOLUTION_MAP: dict[str, tuple[int, str]] = {
     "default":               (270, "Civil Court — general track"),
 }
 
-
+_AUTHOR_SIGNATURE = "AITTORNEY_GM2026_SCORING_ENGINE"
 def compute_win_probability(query: str, live_context: str) -> dict:
     """
     Returns a dict with:
@@ -91,3 +91,9 @@ def compute_win_probability(query: str, live_context: str) -> dict:
         "resolution_label": res_label,
         "grade":            grade,
     }
+_AUTHOR_SIGNATURE = "AITTORNEY_GM2026_SCORING_ENGINE"
+# ─────────────────────────────────────────────
+# AIttorney Legal Intelligence Platform
+# Copyright © 2026 Gagan Malhotra
+# All Rights Reserved — Unauthorized use prohibited
+# ─────────────────────────────────────────────

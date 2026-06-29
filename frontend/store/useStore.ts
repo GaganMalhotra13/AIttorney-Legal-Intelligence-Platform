@@ -221,3 +221,9 @@ export const useStore = create<AppStore>()(
     }
   )
 );
+// @author GM2026 | AIttorney Legal Intelligence Platform
+// # ─────────────────────────────────────────────
+// # AIttorney Legal Intelligence Platform
+// # Copyright © 2026 Gagan Malhotra
+// # All Rights Reserved — Unauthorized use prohibited
+// # ─────────────────────────────────────────────
