@@ -92,13 +92,15 @@ const [showBreakdown, setShowBreakdown] = useState(false);
 // }, [caseQuery]);
 
 const analyze = async () => {
-  if (!caseQuery.trim()) { toast.error("Please describe your situation"); return; }
+  const currentQuery = localQuery.trim();
+  if (!currentQuery) { toast.error("Please describe your situation"); return; }
+  setCaseQuery(localQuery); // sync to store before API call
   setLoading(true);
   setCaseResult(null);
   clearModules();
   try {
     const { data } = await casesAPI.analyze({
-      query:         caseQuery,   // ← was query
+      query:         localQuery,  // use current typed value
       case_type:     caseType,
       claim_amt:     claimAmt,
       location,
@@ -201,14 +203,20 @@ className="w-full bg-white border border-slate-100/70 rounded-xl px-4 py-3
 
           {/* Quick examples */}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
-            {EXAMPLES.slice(0, 4).map((ex) => (
-              <button key={ex} onClick={() => setCaseQuery(ex)}
-                className="px-3 py-1.5 rounded-full bg-bg text-slate-400 border border-slate-100
-                           text-xs hover:border-coral-200 hover:text-coral-600 hover:bg-coral-50
-                           transition-all font-body">
-                {ex.slice(0, 40)}{ex.length > 40 ? "…" : ""}
-              </button>
-            ))}
+           // AFTER — update both local display state AND store
+{EXAMPLES.slice(0, 4).map((ex) => (
+  <button
+    key={ex}
+    onClick={() => {
+      setLocalQuery(ex);   // ← updates textarea display instantly
+      setCaseQuery(ex);    // ← updates store
+    }}
+    className="px-3 py-1.5 rounded-full bg-bg text-slate-400 border border-slate-100
+               text-xs hover:border-coral-200 hover:text-coral-600 hover:bg-coral-50
+               transition-all font-body">
+    {ex.slice(0, 40)}{ex.length > 40 ? "…" : ""}
+  </button>
+))}
           </div>
         </div>
 
