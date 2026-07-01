@@ -203,7 +203,6 @@ className="w-full bg-white border border-slate-100/70 rounded-xl px-4 py-3
 
           {/* Quick examples */}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
-           // AFTER — update both local display state AND store
 {EXAMPLES.slice(0, 4).map((ex) => (
   <button
     key={ex}
