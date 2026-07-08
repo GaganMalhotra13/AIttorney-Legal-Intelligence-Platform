@@ -2,7 +2,7 @@
 backend/routers/cases.py
 Case analysis with Redis caching + security fixes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from middleware.auth import get_current_user
 from schemas.case import CaseRequest
 from database import cases_col
@@ -118,16 +118,15 @@ async def analyze(
 
 # ── History ───────────────────────────────────────────────────
 @router.get("/history")
-async def get_history(user=Depends(get_current_user)):
+async def get_history(
+    user=Depends(get_current_user),
+    limit: int = Query(default=10, ge=5, le=100)
+):
     cursor = (
         cases_col
-        .find(
-            {"username": user["email"]},
-            {"query": 1, "case_type": 1, "win_prob": 1,
-             "grade": 1, "created_at": 1}
-        )
+        .find({"username": user["email"]}, {"query": 1, "case_type": 1, "win_prob": 1, "grade": 1, "created_at": 1})
         .sort("created_at", -1)
-        .limit(15)
+        .limit(limit)
     )
     cases = []
     async for doc in cursor:

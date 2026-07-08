@@ -22,6 +22,7 @@ from fastapi.responses import Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from routers.history import router as history_router
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
@@ -66,6 +67,7 @@ app.include_router(roadmap.router)
 app.include_router(analytics.router)                       # ← MISSING
 app.include_router(documents.router)                       # ← MISSING
 app.include_router(tracker.router)                         # ← MISSING
+app.include_router(history_router)
 
 # ── Startup ───────────────────────────────────────────────────
 @app.on_event("startup")

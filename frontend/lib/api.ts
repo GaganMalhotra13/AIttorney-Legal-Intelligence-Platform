@@ -91,12 +91,13 @@ export const brainAPI = {
 export const contractsAPI = {
   audit:    (text: string, role: string) =>
     api.post("/api/contracts/audit", { text, role }),
+  getById:  (id: string) =>
+    api.get(`/api/contracts/${id}`),
   chat:     (question: string, context: string, doc_id?: string) =>
     api.post("/api/contracts/chat", { question, context, doc_id }),
   simplify: (text: string, role: string) =>
     api.post("/api/contracts/simplify", { text, role }),
 };
-
 // ── Notices ───────────────────────────────────────────────────
 export const noticesAPI = {
   draft: (context: string, sender: string, recipient: string, tone: string) =>
@@ -105,8 +106,10 @@ export const noticesAPI = {
 
 // ── History ───────────────────────────────────────────────────
 export const historyAPI = {
-  cases: () => api.get("/api/cases/history"),
-  stats: () => api.get("/api/cases/stats"), 
+  cases:  ()              => api.get("/api/cases/history"),
+  stats:  ()              => api.get("/api/cases/stats"),
+  all:    (limit = 10)    => api.get(`/api/history/all?limit=${limit}`),
+  delete: (type: string, id: string) => api.delete(`/api/history/${type}/${id}`),
 };
 
 // ── Analytics ─────────────────────────────────────────────────
