@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from bson import ObjectId
+from bson.errors import InvalidId
 import bcrypt
 from datetime import datetime, timedelta
 from database import users_col

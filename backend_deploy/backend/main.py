@@ -7,7 +7,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from fastapi import FastAPI
-from fastapi import Request
+from fastapi import HTTPException, Request
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
@@ -51,7 +51,12 @@ app.add_middleware(
 async def security_headers(request: Request, call_next):
     try:
         response = await call_next(request)
-    except Exception as exc:
+    except HTTPException as exc:
+        response = JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
+    except Exception:
         response = JSONResponse(
             status_code=500,
             content={"detail": "Internal Server Error"},
