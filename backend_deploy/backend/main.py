@@ -7,10 +7,9 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from fastapi import FastAPI
-from fastapi import HTTPException, Request
+from fastapi import Request
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, JSONResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,35 +40,21 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8501",
-        "https://aittorney-legalintelligence.vercel.app",
     ],
-    allow_credentials=True,
+    allow_origin_regex=r"https://aittorney-legalintelligence.*\.vercel\.app",
+        allow_credentials=True,          # ← ADD THIS
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
-    try:
-        response = await call_next(request)
-    except HTTPException as exc:
-        response = JSONResponse(
-            status_code=exc.status_code,
-            content={"detail": exc.detail},
-        )
-    except Exception:
-        response = JSONResponse(
-            status_code=500,
-            content={"detail": "Internal Server Error"},
-        )
+    response = await call_next(request)
     response.headers["X-Content-Type-Options"]  = "nosniff"
     response.headers["X-Frame-Options"]          = "DENY"
     response.headers["X-XSS-Protection"]         = "1; mode=block"
     response.headers["Referrer-Policy"]           = "strict-origin-when-cross-origin"
     response.headers["Content-Type"]              = "application/json; charset=utf-8"
-    response.headers["Access-Control-Allow-Origin"]      = "https://aittorney-legalintelligence.vercel.app"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"]     = "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
-    response.headers["Access-Control-Allow-Headers"]     = "Authorization, Content-Type, X-Requested-With"
     return response
 # ── Routers ───────────────────────────────────────────────────
 app.include_router(auth.router)
