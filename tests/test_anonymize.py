@@ -43,8 +43,8 @@ class TestEmailRedaction:
         assert "john@example.com" not in result
 
     def test_gmail_removed(self):
-        result = anonymize("Reach me at ramesh.kumar@gmail.com")
-        assert "ramesh.kumar@gmail.com" not in result
+        result = anonymize("Reach me at malhotragagan1996@gmail.com")
+        assert "malhotragagan1996@gmail.com" not in result
 
     def test_multiple_emails_removed(self):
         result = anonymize("From: a@b.com and also c@d.org")
@@ -110,7 +110,7 @@ class TestOutputAlwaysString:
         assert isinstance(result, str)
 
     def test_mixed_pii_and_legal_text(self):
-        text   = "Ramesh Kumar (9876543210) filed a complaint about ₹50,000 deposit"
+        text   = "Gagan Malhotra (9876543210) filed a complaint about ₹50,000 deposit"
         result = anonymize(text)
         assert isinstance(result, str)
         assert "9876543210" not in result

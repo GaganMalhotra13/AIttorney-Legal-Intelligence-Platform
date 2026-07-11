@@ -176,7 +176,7 @@ RESPONSE DEADLINE: ${notice.deadline} days
                 <input value={lSenderName}
                   onChange={(e) => setLSenderName(e.target.value)}
                   onBlur={(e) => setNotice({ senderName: e.target.value })}
-                  placeholder="e.g. Ramesh Kumar Sharma" className={ic} />
+                  placeholder="e.g.  Gagan Malhotra" className={ic} />
               </div>
               <div>
                 <label className={lc}>Full Address *</label>
