@@ -163,7 +163,7 @@ export default function HistoryPage() {
     e.stopPropagation();
     setDeletingId(item._id);
     try {
-      await historyAPI.delete(item.type, item._id);
+await historyAPI.delete(item.type, item._id);
       setItems(prev => prev.filter(i => i._id !== item._id));
       toast.success("Deleted");
     } catch {

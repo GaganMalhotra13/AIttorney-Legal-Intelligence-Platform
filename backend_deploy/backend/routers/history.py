@@ -3,11 +3,12 @@ backend/routers/history.py
 Unified history endpoint — merges cases, audits, roadmaps, notices
 sorted by date with pagination.
 """
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from middleware.auth import get_current_user
 from database import cases_col, audits_col, roadmaps_col, notices_col
 from bson import ObjectId
 from datetime import datetime
+from bson.errors import InvalidId
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
@@ -136,28 +137,28 @@ async def delete_history_item(
     item_id:   str,
     user=Depends(get_current_user),
 ):
-    """Delete any history item by type and ID."""
-    from fastapi import HTTPException
     col_map = {
         "case":     cases_col,
         "contract": audits_col,
         "roadmap":  roadmaps_col,
         "notice":   notices_col,
     }
+
     col = col_map.get(item_type)
     if not col:
-        raise HTTPException(400, f"Unknown type: {item_type}")
+        raise HTTPException(status_code=400, detail=f"Unknown type: {item_type}")
 
     try:
         oid = ObjectId(item_id)
-    except Exception:
-        raise HTTPException(400, "Invalid ID format")
+    except (InvalidId, Exception):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
 
     result = await col.delete_one({
         "_id":      oid,
         "username": user["email"],
     })
+
     if result.deleted_count == 0:
-        raise HTTPException(404, "Item not found")
+        raise HTTPException(status_code=404, detail="Item not found or already deleted")
 
     return {"deleted": True}
