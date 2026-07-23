@@ -191,7 +191,7 @@ await historyAPI.delete(item.type, item._id);
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <div className="eyebrow mb-3">Persistent Storage · MongoDB</div>
+          <div className="eyebrow mb-3">Persistent Storage </div>
           <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold
                          text-navy-900 tracking-tight mb-3">
             Your <em className="not-italic text-coral-600">Activity History</em>

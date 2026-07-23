@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
     <div className="space-y-8 page-enter">
       {/* Header */}
       <div>
-        <div className="eyebrow mb-3">Personal Analytics · MongoDB Aggregation</div>
+        <div className="eyebrow mb-3">Personal Analytics · Aggregation Pipelining</div>
 <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Your Legal <em className="not-italic text-coral-600">Analytics</em>
         </h1>

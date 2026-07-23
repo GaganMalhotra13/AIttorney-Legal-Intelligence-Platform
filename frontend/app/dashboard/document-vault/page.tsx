@@ -122,7 +122,7 @@ const highlightSnippet = (snippet: string, query: string) => {
     <div className="space-y-8 page-enter">
       {/* Header */}
       <div>
-        <div className="eyebrow mb-3">Document Intelligence · AI Tagging · Semantic Search</div>
+        <div className="eyebrow mb-3">Document Intelligence · Smart Tagging · Semantic Search</div>
 <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
           Document <em className="not-italic text-coral-600">Vault</em>
         </h1>

@@ -119,12 +119,12 @@ export default function CaseTrackerPage() {
       {/* Header */}
 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <div className="eyebrow mb-3">Court Date Tracker · AI Preparation</div>
+          <div className="eyebrow mb-3">Court Date Tracker · Checklist Preparation</div>
 <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight mb-3">
             Case <em className="not-italic text-coral-600">Tracker</em>
           </h1>
           <p className="text-slate-500 text-sm">
-            Track hearing dates, get AI-generated preparation checklists, and never miss a court date.
+            Track hearing dates, get propergenerated preparation checklists, and never miss a court date.
           </p>
         </div>
         <motion.button
@@ -423,7 +423,7 @@ function DateCard({
               {date.preparation && (
                 <div>
                   <p className="label mb-3 flex items-center gap-1.5">
-                    <ListChecks className="w-3 h-3" /> AI Preparation Checklist
+                    <ListChecks className="w-3 h-3" />  Preparation Checklist
                   </p>
                   <div className="bg-bg2 rounded-xl p-4 markdown-result">
   <ReactMarkdown remarkPlugins={[remarkGfm]}>

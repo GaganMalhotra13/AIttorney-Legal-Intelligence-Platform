@@ -137,7 +137,7 @@ const analyze = async () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div className="min-w-0">
-          <div className="eyebrow mb-3">Legal Research Terminal · 11 AI Modules · 18 Sources</div>
+          <div className="eyebrow mb-3">Legal Research Terminal · 11 Distinct Modules · 18 Sources</div>
           <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-navy-900 tracking-tight leading-tight mb-3">
             What's Your <em className="not-italic text-coral-600">Legal Situation?</em>
           </h1>
