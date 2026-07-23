@@ -125,7 +125,7 @@ async def register(request: Request, body: RegisterBody):
 @router.post("/login")
 @limiter.limit("10/minute") 
 async def login(request: Request, body: LoginBody, response: Response):
-    user = await users_col.find_one({"email": body.email})
+    user = await users_col.find_one({"email": body.email.lower().strip()})
     if not user:
         raise HTTPException(401, "Invalid credentials")
     if not bcrypt.checkpw(body.password[:72].encode(), user["password"].encode()):

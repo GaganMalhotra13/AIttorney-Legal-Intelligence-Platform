@@ -43,8 +43,7 @@ export default function SignupPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const { data } = await authAPI.register(name, email, password);
-
+const { data } = await authAPI.register(name.trim(), email.trim().toLowerCase(), password);
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
       setUser({ email: data.user.email, name: data.user.name, token: data.access_token });
@@ -133,8 +132,7 @@ export default function SignupPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+onChange={(e) => setEmail(e.target.value.toLowerCase())}                placeholder="you@example.com"
                 className="input pl-10"
               />
             </div>

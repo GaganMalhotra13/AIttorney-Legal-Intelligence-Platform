@@ -29,7 +29,7 @@ const [passwordError, setPasswordError] = useState(false);
   // Autofill demo password ONLY when demo email is typed —
   // does not block or restrict any other email
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+  const val = e.target.value.toLowerCase();
     setEmail(val);
       setEmailError(false);      // ← clears red border as user types
 
@@ -62,11 +62,11 @@ const [passwordError, setPasswordError] = useState(false);
   setLoading(true);
 
   try {
-    const { data } = await authAPI.login(email.trim(), password);
+const { data } = await authAPI.login(email.trim().toLowerCase(), password);
     localStorage.setItem("token",         data.access_token  || "");
     localStorage.setItem("refresh_token", data.refresh_token || "");
     setUser({
-      email: data.user?.email || email,
+      email: data.user?.email || email.trim().toLowerCase(),
       name:  data.user?.name  || "",
       token: data.access_token,
     });
