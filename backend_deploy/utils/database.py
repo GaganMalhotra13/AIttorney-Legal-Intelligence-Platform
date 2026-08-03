@@ -5,7 +5,8 @@ Adds a real Case History tab — no more losing data on refresh.
 """
 import sqlite3
 import json
-from datetime import datetime
+from datetime import datetime, UTC
+
 
 DB_PATH = "aittorney.db"
 

@@ -5,7 +5,8 @@ Run this once to set up test@testing.com account
 """
 import asyncio
 import bcrypt
-from datetime import datetime
+from datetime import datetime, UTC
+
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 import os
@@ -38,7 +39,7 @@ async def create_demo_user():
         "phone": None,
         "location": None,
         "plan": "free",
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
         "last_login": None,
         "login_count": 0,
     })

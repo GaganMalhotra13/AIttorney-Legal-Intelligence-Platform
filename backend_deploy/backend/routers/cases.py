@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from middleware.auth import get_current_user
 from schemas.case import CaseRequest
 from database import cases_col
-from datetime import datetime
+from datetime import datetime, UTC
+
 from bson import ObjectId
 import sys, os, hashlib
 from slowapi import Limiter
@@ -60,7 +61,7 @@ async def analyze(
             "laws":            cached["laws"][:1000],
             "sources_count":   len(cached.get("sources", [])),
             "landmarks_count": len(cached.get("landmarks", [])),
-            "created_at":      datetime.utcnow(),
+            "created_at":      datetime.now(UTC),
             "full_sources":    cached.get("sources", []),
             "full_landmarks":  cached.get("landmarks", []),
             "full_score_data": cached.get("score_data", {}),
@@ -92,7 +93,7 @@ async def analyze(
         "laws":            laws[:1000],
         "sources_count":   len(raw_results),
         "landmarks_count": len(landmarks),
-        "created_at":      datetime.utcnow(),
+        "created_at":      datetime.now(UTC),
         "full_sources":    raw_results[:6],
         "full_landmarks":  landmarks[:3],
         "full_score_data": score_data,

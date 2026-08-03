@@ -5,6 +5,8 @@ case_comparator now uses real scraped judgment text.
 """
 from config import MODEL
 from utils.search import search_bare_act, search_recent_judgments
+import json
+import re
 
 try:
     from utils.kanoon_scraper import get_landmark_judgments
@@ -240,7 +242,8 @@ def case_strength_timeline(
     query: str,
     score_data: dict,
     case_type: str,
-) -> list[dict]:
+) -> str:
+
     raw = _safe(f"""
 Legal strategist modeling case progression for an Indian lawsuit.
 Case: {query}
@@ -274,25 +277,125 @@ STAGE: Appeal (if needed)
 PROB: [0-100]
 NOTE: [One sentence]
 """)
+
     stages = []
+
     for block in raw.split("STAGE:"):
-        lines = [l.strip() for l in block.strip().splitlines() if l.strip()]
+        lines = [
+            l.strip()
+            for l in block.strip().splitlines()
+            if l.strip()
+        ]
+
         if not lines:
             continue
+
         name = lines[0]
         prob = 50
         note = ""
+
         for l in lines[1:]:
             if l.startswith("PROB:"):
                 try:
-                    prob = max(5, min(95, int(l.replace("PROB:","").strip().split()[0])))
+                    prob = max(
+                        5,
+                        min(
+                            95,
+                            int(
+                                l.replace("PROB:", "")
+                                .strip()
+                                .split()[0]
+                            )
+                        )
+                    )
                 except:
                     pass
+
             elif l.startswith("NOTE:"):
-                note = l.replace("NOTE:","").strip()
+                note = l.replace("NOTE:", "").strip()
+
         if name:
-            stages.append({"stage": name, "prob": prob, "note": note})
-    return stages
+            stages.append({
+                "stage": name,
+                "prob": prob,
+                "note": note
+            })
+
+    output = "## 📈 Case Strength Timeline\n\n"
+
+    for stage in stages:
+        output += f"""
+### {stage['stage']}
+
+**Win Probability:** {stage['prob']}%
+
+{stage['note']}
+
+---
+
+"""
+
+    if not stages:
+        return raw
+
+    return output
+# def case_strength_timeline(
+#     query: str,
+#     score_data: dict,
+#     case_type: str,
+# ) -> list[dict]:
+#     raw = _safe(f"""
+# Legal strategist modeling case progression for an Indian lawsuit.
+# Case: {query}
+# Starting win probability: {score_data.get('probability',50)}%
+# Case type: {case_type}
+
+# For each stage give probability and a specific note.
+# EXACT format — nothing else:
+
+# STAGE: Legal Notice / Demand Letter
+# PROB: [0-100]
+# NOTE: [One specific sentence on what happens and why strength shifts]
+
+# STAGE: Filing & Court Admission
+# PROB: [0-100]
+# NOTE: [One sentence]
+
+# STAGE: Interim Relief / Stay Order
+# PROB: [0-100]
+# NOTE: [One sentence]
+
+# STAGE: Evidence & Arguments
+# PROB: [0-100]
+# NOTE: [One sentence]
+
+# STAGE: Final Judgment
+# PROB: [0-100]
+# NOTE: [One sentence]
+
+# STAGE: Appeal (if needed)
+# PROB: [0-100]
+# NOTE: [One sentence]
+# """)
+#     stages = []
+#     for block in raw.split("STAGE:"):
+#         lines = [l.strip() for l in block.strip().splitlines() if l.strip()]
+#         if not lines:
+#             continue
+#         name = lines[0]
+#         prob = 50
+#         note = ""
+#         for l in lines[1:]:
+#             if l.startswith("PROB:"):
+#                 try:
+#                     prob = max(5, min(95, int(l.replace("PROB:","").strip().split()[0])))
+#                 except:
+#                     pass
+#             elif l.startswith("NOTE:"):
+#                 note = l.replace("NOTE:","").strip()
+#         if name:
+#             stages.append({"stage": name, "prob": prob, "note": note})
+#     return stages
 
 
 # ── 7. JURISDICTION ADVISOR ───────────────────────────────────

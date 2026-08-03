@@ -10,6 +10,7 @@ import {
   History, LogOut, ChevronRight, ChevronDown, LayoutDashboard,
   BarChart2, FolderOpen, Calendar, AlertTriangle, Users, Shield, Menu, X
 } from "lucide-react";
+import ProfileModal from "@/components/features/ProfileModal";
 
 const NAV_CORE = [
   { href: "/dashboard/home",            icon: LayoutDashboard, label: "Home"            },
@@ -28,7 +29,7 @@ const NAV_TOOLS = [
 ];
 
 const STATUS = [
-  { label: "Gemini API",        live: true },
+  { label: "API ACTIVE",        live: true },
   { label: "18-Source Search",  live: true },
   { label: "11 AI Modules",     live: true },
   { label: "FastAPI Backend",   live: true },
@@ -40,7 +41,6 @@ type NavItemProps = {
   pathname: string;
   showLabel: boolean;
 };
-
 const NavItem = memo(function NavItem({
   href,
   icon: Icon,
@@ -105,6 +105,7 @@ const logout = useStore((s) => s.logout);  const router   = useRouter();
   const [statusOpen,   setStatusOpen]   = useState(false);
   const [isMobile,     setIsMobile]     = useState(false);
   const [mobileOpen,   setMobileOpen]   = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // ── Mobile detection ─────────────────────────────────────
   useEffect(() => {
@@ -317,21 +318,36 @@ const logout = useStore((s) => s.logout);  const router   = useRouter();
         {/* User */}
         <div className="p-3 border-t border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-coral-100 border border-coral-200 flex items-center justify-center flex-shrink-0">
-              <span className="font-bold text-coral-700 text-xs">{initials}</span>
-            </div>
-            <AnimatePresence>
-              {sidebarShowLabels && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 min-w-0">
-                  <p className="font-semibold text-navy-800 text-xs truncate">{user.name}</p>
-                  <p className="text-slate-400 text-xs font-mono truncate">{user.email}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button onClick={logout} title="Sign out"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-coral-600 hover:bg-coral-50 transition-all flex-shrink-0">
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
+            <button
+      onClick={() => setProfileOpen(true)}
+      className="flex items-center gap-3 flex-1 min-w-0 rounded-xl
+                 hover:bg-coral-50 transition-all p-1 -m-1 text-left"
+      title="Edit profile"
+    >
+      <div className="w-8 h-8 rounded-lg bg-coral-100 border border-coral-200
+                      flex items-center justify-center flex-shrink-0">
+        <span className="font-bold text-coral-700 text-xs">{initials}</span>
+      </div>
+      <AnimatePresence>
+        {sidebarShowLabels && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 min-w-0"
+          >
+            <p className="font-semibold text-navy-800 text-xs truncate">{user.name}</p>
+            <p className="text-slate-400 text-xs font-mono truncate">{user.email}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </button>
+    <button onClick={logout} title="Sign out"
+      className="p-1.5 rounded-lg text-slate-400 hover:text-coral-600
+                 hover:bg-coral-50 transition-all flex-shrink-0">
+      <LogOut className="w-3.5 h-3.5" />
+    </button>
+           
           </div>
         </div>
 
@@ -361,6 +377,10 @@ const logout = useStore((s) => s.logout);  const router   = useRouter();
         </div>
         <div className="p-4 sm:p-6 md:p-8 max-w-[1200px] mx-auto page-enter">{children}</div>
       </main>
+      <ProfileModal
+  open={profileOpen}
+  onClose={() => setProfileOpen(false)}
+/>
     </div>
   );
 }

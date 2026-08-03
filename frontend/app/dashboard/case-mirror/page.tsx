@@ -87,10 +87,15 @@ const [incDate, setIncDate] = useState("");
 const [loading, setLoading] = useState(false);
 const [showBreakdown, setShowBreakdown] = useState(false);
 
+useEffect(() => {
+  setLocalQuery(caseQuery || "");
+}, [caseQuery]);
+// Add this effect in case-mirror/page.tsx
 // useEffect(() => {
-//   setLocalQuery(caseQuery);
+//   if (!caseQuery) {
+//     setLocalQuery("");
+//   }
 // }, [caseQuery]);
-
 const analyze = async () => {
   const currentQuery = localQuery.trim();
   if (!currentQuery) { toast.error("Please describe your situation"); return; }
@@ -120,11 +125,16 @@ const analyze = async () => {
 };
 
   const handleClear = () => {
-    setLocalQuery("");
-    setCaseQuery("");
-    setCaseResult(null);
-    clearModules();
-    setIncDate("");
+     setCaseResult(null);
+  setLiveContext("");
+  setCaseQuery("");
+  setCaseType("");   
+  setClaimAmt(0);                     
+  setLocation("India (General)");     
+  setLocalQuery("");
+  setIncDate("");                      
+  clearModules();
+  toast.success("Cleared");
   };
 
   const prob  = caseResult?.win_prob  ?? 0;
@@ -225,8 +235,13 @@ className="w-full bg-white border border-slate-100/70 rounded-xl px-4 py-3
             <label className="label">Case Type</label>
             <select value={caseType} onChange={(e) => setCaseType(e.target.value)}
               className="input py-2 text-xs">
-              {CASE_TYPES.map((t) => <option key={t}>{t}</option>)}
-            </select>
+  <option value="" disabled>
+    Select Case Type
+  </option>
+  {CASE_TYPES.map((t) => (
+    <option key={t} value={t}>{t}</option>
+  ))}
+</select>
           </div>
           <div className="w-full sm:w-36">
   <label className="label">Claim (₹)</label>

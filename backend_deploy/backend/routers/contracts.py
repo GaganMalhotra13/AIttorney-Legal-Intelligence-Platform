@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from middleware.auth import get_current_user
 from schemas.contract import AuditRequest, ChatRequest
 from database import audits_col
-from datetime import datetime
+from datetime import datetime, UTC
+
 import sys, os, io
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -60,7 +61,7 @@ async def audit_contract_route(body: AuditRequest, user=Depends(get_current_user
         "full_analysis": gemini_analysis,      # ← full prose analysis
         "text_preview":  body.text[:300],      # ← first 300 chars as title hint
         "flag_count":    final_score["flag_count"],
-        "created_at":    datetime.utcnow(),
+        "created_at":    datetime.now(UTC),
     })
 
     return {

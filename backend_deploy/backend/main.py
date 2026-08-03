@@ -39,10 +39,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://localhost:8501",
+        "http://127.0.0.1:8501",
     ],
     allow_origin_regex=r"https://aittorney-legalintelligence.*\.vercel\.app",
-        allow_credentials=True,          # ← ADD THIS
+        allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 

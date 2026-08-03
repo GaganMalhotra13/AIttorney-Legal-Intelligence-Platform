@@ -1,7 +1,8 @@
 # backend/schemas/user.py
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
+
 
 class UserRegister(BaseModel):
     email:    EmailStr

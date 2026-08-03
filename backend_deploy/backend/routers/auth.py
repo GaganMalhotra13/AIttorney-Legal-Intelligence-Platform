@@ -1,9 +1,9 @@
 # backend/routers/auth.py — complete strengthened version
 from fastapi import APIRouter, HTTPException, Depends, Response, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from bson import ObjectId
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 import bcrypt, os
 from jose import jwt, JWTError
 from database import users_col, refresh_tokens_col
@@ -27,11 +27,14 @@ def make_access_token(user_id: str, email: str) -> str:
         "sub":   user_id,
         "email": email,
         "type":  "access",
-        "exp":   datetime.utcnow() + timedelta(seconds=ACCESS_EXP),
+        "exp":   datetime.now(UTC) + timedelta(seconds=ACCESS_EXP),
     }, SECRET, algorithm=ALG)
 
 def make_refresh_token() -> str:
     return secrets.token_urlsafe(64)
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password[:72].encode(), bcrypt.gensalt()).decode()
 
 async def get_current_user_dep(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if not credentials or credentials.scheme.lower() != "bearer":
@@ -57,8 +60,8 @@ async def save_refresh_token(user_id: str, token: str):
     await refresh_tokens_col.insert_one({
         "user_id":    user_id,
         "token":      token,
-        "created_at": datetime.utcnow(),
-        "expires_at": datetime.utcnow() + timedelta(seconds=REFRESH_EXP),
+        "created_at": datetime.now(UTC),
+        "expires_at": datetime.now(UTC) + timedelta(seconds=REFRESH_EXP),
         "revoked":    False,
     })
 
@@ -98,8 +101,8 @@ async def register(request: Request, body: RegisterBody):
         "phone":      None,
         "location":   None,
         "plan":       "free",
-        "created_at": datetime.utcnow(),
-        "last_login": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
+        "last_login": datetime.now(UTC),
         "login_count":1,
     })
 
@@ -136,7 +139,7 @@ async def login(request: Request, body: LoginBody, response: Response):
     # Update last login
     await users_col.update_one(
         {"_id": user["_id"]},
-        {"$set":  {"last_login": datetime.utcnow()},
+        {"$set":  {"last_login": datetime.now(UTC)},
          "$inc":  {"login_count": 1}}
     )
 
@@ -175,7 +178,7 @@ async def login(request: Request, body: LoginBody, response: Response):
         }
     }
 
-
+@router.post("/refresh")
 @limiter.limit("30/minute")             # ← reasonable for token refresh
 async def refresh(request: Request, body: RefreshBody):
     """Exchange a refresh token for a new access token — no re-login needed."""
@@ -185,7 +188,7 @@ async def refresh(request: Request, body: RefreshBody):
     })
     if not record:
         raise HTTPException(401, "Invalid or expired refresh token")
-    if record["expires_at"] < datetime.utcnow():
+    if record["expires_at"] < datetime.now(UTC):
         raise HTTPException(401, "Refresh token expired. Please log in again.")
 
     user = await users_col.find_one({"_id": ObjectId(record["user_id"])})
@@ -231,7 +234,24 @@ async def get_me(user=Depends(get_current_user_dep)):
                        if user.get("created_at") else None,
     }
 
+class ChangePasswordBody(BaseModel):
+    current_password: str
+    new_password:     str = Field(..., min_length=6)
 
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordBody,
+    user=Depends(get_current_user_dep)
+):
+    if not bcrypt.checkpw(body.current_password[:72].encode(), user["password"].encode()):
+        raise HTTPException(400, "Current password is incorrect")
+
+    new_hashed = hash_password(body.new_password)
+    await users_col.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"password": new_hashed}}
+    )
+    return {"updated": True}
 @router.patch("/profile")
 async def update_profile(body: UpdateProfileBody, user=Depends(get_current_user_dep)):
     """Update name, phone, location."""

@@ -5,7 +5,8 @@ Unified history endpoint — cases, contracts, roadmaps, notices.
 from fastapi import APIRouter, Depends, Query, HTTPException
 from bson import ObjectId
 from bson.errors import InvalidId
-from datetime import datetime
+from datetime import datetime, UTC
+
 from middleware.auth import get_current_user
 from database import cases_col, audits_col, roadmaps_col, notices_col
 
@@ -42,7 +43,7 @@ async def get_all_history(
             "badge_color": color,
             "route":       "/dashboard/case-mirror",
             "result_id":   str(doc["_id"]),
-            "created_at":  doc.get("created_at", datetime.utcnow()),
+            "created_at":  doc.get("created_at", datetime.now(UTC)),
         })
 
     # ── Contract Audits ───────────────────────────────────────
@@ -64,7 +65,7 @@ async def get_all_history(
             "badge_color": color,
             "route":       "/dashboard/contract-audit",
             "result_id":   str(doc["_id"]),
-            "created_at":  doc.get("created_at", datetime.utcnow()),
+            "created_at":  doc.get("created_at", datetime.now(UTC)),
         })
 
     # ── Roadmaps ──────────────────────────────────────────────
@@ -82,7 +83,7 @@ async def get_all_history(
             "badge_color": "blue",
             "route":       "/dashboard/roadmap",
             "result_id":   str(doc["_id"]),
-            "created_at":  doc.get("created_at", datetime.utcnow()),
+            "created_at":  doc.get("created_at", datetime.now(UTC)),
         })
 
     # ── Notices ───────────────────────────────────────────────
@@ -100,7 +101,7 @@ async def get_all_history(
             "badge_color": "purple",
             "route":       "/dashboard/notice-drafter",
             "result_id":   str(doc["_id"]),
-            "created_at":  doc.get("created_at", datetime.utcnow()),
+            "created_at":  doc.get("created_at", datetime.now(UTC)),
         })
 
     # ── Merge + Sort + Slice ──────────────────────────────────

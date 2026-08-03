@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends
 from middleware.auth import get_current_user
 from database import cases_col, audits_col, notices_col, db
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 
 tracker_col = db["court_dates"]
 router      = APIRouter(prefix="/api/analytics", tags=["analytics"])
@@ -46,7 +46,7 @@ async def get_overview(user=Depends(get_current_user)):
         recent.append(c)
 
     # Weekly activity (last 8 weeks)
-    eight_weeks_ago = datetime.utcnow() - timedelta(weeks=8)
+    eight_weeks_ago = datetime.now(UTC) - timedelta(weeks=8)
     weekly_agg = await cases_col.aggregate([
         {"$match": {"username": email, "created_at": {"$gte": eight_weeks_ago}}},
         {"$group": {

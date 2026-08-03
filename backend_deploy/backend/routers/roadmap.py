@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from middleware.auth import get_current_user
 from database import roadmaps_col
-from datetime import datetime
+from datetime import datetime, UTC
+
 import sys, os
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -21,7 +22,7 @@ async def _generate_and_save(situation: str, jurisdiction: str, user_email: str)
         "situation":    situation[:500],
         "jurisdiction": jurisdiction,
         "steps":        result,              # ← full steps string saved
-        "created_at":   datetime.utcnow(),
+        "created_at":   datetime.now(UTC),
     })
     return {
         "steps":      result,

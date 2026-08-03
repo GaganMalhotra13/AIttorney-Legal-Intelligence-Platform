@@ -4,7 +4,8 @@ Pydantic schemas for Document Vault.
 """
 from pydantic import BaseModel, Field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
+
 
 
 class DocumentMetadata(BaseModel):

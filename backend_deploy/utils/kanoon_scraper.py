@@ -28,6 +28,18 @@ def _clean_text(raw: str) -> str:
     text = re.sub(r'\s+', ' ', raw)
     text = re.sub(r'\[(\d+)\]', r'[¶\1]', text)  # preserve paragraph refs
     return text.strip()
+# ADD this function after _clean_text in kanoon_scraper.py
+
+def _is_legal_result(title: str, snippet: str) -> bool:
+    """Filter out clearly non-legal IndianKanoon results."""
+    combined = (title + " " + snippet).lower()
+    # IndianKanoon sometimes returns misc content
+    NOISE = ["lyrics", "song", "music", "歌詞", "recipe", "weather"]
+    if any(n in combined for n in NOISE):
+        return False
+    LEGAL = ["vs", "v/s", "court", "judgment", "section", "act",
+             "petition", "plaintiff", "state of", "union of india"]
+    return any(l in combined for l in LEGAL)
 def _safe_decode(resp) -> str:
     """Decode response bytes as UTF-8, replacing any malformed sequences instead of garbling."""
     try:
@@ -94,7 +106,8 @@ def search_indiankanoon(query: str, max_results: int = 8) -> list[dict]:
                 parts = meta_text.split("|")
                 court = parts[0].strip() if parts else ""
                 date  = parts[1].strip() if len(parts) > 1 else ""
-
+            if not _is_legal_result(title, snippet):
+                continue                   
             results.append({
                 "title":      title,
                 "url":        full_url,

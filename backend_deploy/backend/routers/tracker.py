@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from middleware.auth import get_current_user
 from database import db
-from datetime import datetime
+from datetime import datetime, UTC
+
 from bson import ObjectId
 import sys, os
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -52,7 +53,7 @@ Format as bullet points. Be specific and actionable.
         "case_number":     body.case_number,
         "preparation":     prep,
         "status":          "upcoming",
-        "created_at":      datetime.utcnow(),
+        "created_at":      datetime.now(UTC),
         "reminder_sent":   False,
     })
     return {"id": str(result.inserted_id), "preparation": prep}

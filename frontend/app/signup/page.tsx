@@ -124,6 +124,22 @@ const { data } = await authAPI.register(name.trim(), email.trim().toLowerCase(),
             </div>
           </div>
 
+          {/* Plan */}
+          <div>
+            <label className="label">Plan</label>
+  <div className="input text-sm bg-slate-50 text-slate-400
+                  cursor-not-allowed flex items-center gap-2">
+    <span className="w-2 h-2 rounded-full bg-teal-400 flex-shrink-0" />
+    Free — Upgrade coming soon
+    <span className="ml-auto text-2xs font-mono bg-teal-50 text-teal-600
+                     border border-teal-200 px-1.5 py-0.5 rounded-md">
+      FREE
+    </span>
+  </div>
+  <p className="text-2xs text-slate-300 mt-1 font-mono">
+    Free plan includes all features. No credit card required.
+  </p>
+</div>
           {/* Email */}
           <div>
             <label className="label">Email Address</label>

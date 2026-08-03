@@ -64,7 +64,7 @@ h1, h2, h3, h4, h5, h6 {
   }
   .eyebrow::before {
     content: '';
-    @apply block w-5 h-0.5 bg-coral-500 rounded-full flex-shrink-0;
+    @apply block w-4 h-0.5 bg-coral-500 rounded-full flex-shrink-0;
   }
   
   .card {

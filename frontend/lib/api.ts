@@ -32,6 +32,10 @@ export const authAPI = {
     api.post("/api/auth/login", { email, password }),
   register: (name: string, email: string, password: string) =>
     api.post("/api/auth/register", { name, email, password }),
+ updateProfile: (data: { phone?: string; name?: string }) =>
+    api.patch("/api/auth/profile", data),
+  changePassword: (current_password: string, new_password: string) =>
+    api.post("/api/auth/change-password", { current_password, new_password }),
 };
 
 // ── Cases ─────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from bson import ObjectId
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 from database import users_col
 import os
 
@@ -27,7 +27,7 @@ def create_token(user_id: str, email: str) -> str:
     payload = {
         "sub":   user_id,
         "email": email,
-        "exp":   datetime.utcnow() + timedelta(hours=EXPIRE_H)
+        "exp":   datetime.now(UTC) + timedelta(hours=EXPIRE_H)
     }
     return jwt.encode(payload, SECRET, algorithm=ALGORITHM)
 

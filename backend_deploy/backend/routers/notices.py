@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from middleware.auth import get_current_user
 from database import notices_col
-from datetime import datetime
+from datetime import datetime, UTC
+
 import sys, os
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if ROOT not in sys.path:
@@ -26,6 +27,6 @@ async def draft(body: NoticeRequest, user=Depends(get_current_user)):
         "context":    body.context[:500],
         "tone":       body.tone,
         "output":     output[:5000],
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     })
     return {"notice": output}

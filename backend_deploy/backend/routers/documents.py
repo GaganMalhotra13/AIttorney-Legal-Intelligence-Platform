@@ -4,7 +4,8 @@ import json
 from bson import ObjectId
 from middleware.auth import get_current_user
 from database import documents_col
-from datetime import datetime
+from datetime import datetime, UTC
+
 import hashlib, base64
 import sys, os, re
 import re as _re
@@ -104,7 +105,7 @@ async def upload_document(
         "content_b64": base64.b64encode(content).decode() if len(content) < 2*1024*1024 else None,
         "text_preview":text[:500],
         "metadata":    metadata,
-        "created_at":  datetime.utcnow(),
+        "created_at":  datetime.now(UTC),
     }
     result = await documents_col.insert_one(doc)
     return {"id": str(result.inserted_id), "metadata": metadata}
