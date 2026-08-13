@@ -148,7 +148,7 @@ const { data } = await authAPI.register(name.trim(), email.trim().toLowerCase(),
               <input
                 type="email"
                 value={email}
-onChange={(e) => setEmail(e.target.value.toLowerCase())}                placeholder="you@example.com"
+onChange={(e) => setEmail(e.target.value.toLowerCase())}                placeholder="gagan@example.com"
                 className="input pl-10"
               />
             </div>

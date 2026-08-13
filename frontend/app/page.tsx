@@ -116,26 +116,28 @@ const { data } = await authAPI.login(email.trim().toLowerCase(), password);
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Left panel */}
-      <div className="hidden lg:flex lg:w-[52%] bg-navy-900 relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+<div className="hidden lg:flex lg:w-[52%] bg-navy-900 relative
+                overflow-hidden flex-col justify-start gap-8 p-10 h-full">        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
         <div className="absolute top-0 left-0 w-96 h-96 bg-coral-500 rounded-full filter blur-3xl opacity-10 -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-500 rounded-full filter blur-3xl opacity-8 translate-x-1/3 translate-y-1/3" />
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16,1,0.3,1] }} className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16,1,0.3,1] }} className="relative z-10 -mt-2">
+          <div className="flex items-center gap-3 mb-0">
             <div className="w-10 h-10 rounded-xl bg-coral-600 flex items-center justify-center shadow-coral"><Scale className="w-5 h-5 text-white" /></div>
-            <span className="font-display text-2xl font-bold text-white tracking-tight">AI<span className="text-coral-400">ttorney</span></span>
+            <span className="font-display text-3xl font-bold text-white tracking-tight">AI<span className="text-coral-400">ttorney</span></span>
           </div>
-          <p className="font-mono text-2xs tracking-widest uppercase text-white/30 ml-[52px]">Legal Intelligence Platform </p>
+          <p className="font-mono text-2xs tracking-widest uppercase text-white/60 ml-[52px] mb-2 mt-0">
+Legal Intelligence Platform </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }} className="relative z-10">
-          <h1 className="font-display text-5xl font-bold text-white leading-[1.1] tracking-tight mb-6">
-            Plain language in.<br /><span className="text-coral-400">Full legal intelligence</span><br />out.
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }} className="relative z-10 mt-0">
+          <h1 className="font-display text-5xl font-bold text-white leading-[1.1] tracking-tight mb-9">
+            Where Facts Meet
+<br /><span className="text-coral-400">Jurisprudential Reasoning</span>
           </h1>
-          <p className="text-white/50 text-base leading-relaxed max-w-sm">
-            Describe your situation in plain language. Get win probability, landmark judgments, and 11 AI modules from 18 live Indian legal databases.
-          </p>
+        <p className="text-white/70 text-base leading-relaxed max-w-xl mb-1">
+  Describe your situation in plain language. Get win probability, landmark judgments, and 11 AI modules from 18 live Indian legal databases.
+</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="relative z-10 grid grid-cols-2 gap-3">
@@ -155,7 +157,7 @@ const { data } = await authAPI.login(email.trim().toLowerCase(), password);
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: [0.16,1,0.3,1] }} className="w-full max-w-md">
 <div className="lg:hidden flex items-center gap-3 mb-6 sm:mb-10">
             <div className="w-9 h-9 rounded-xl bg-coral-600 flex items-center justify-center"><Scale className="w-4 h-4 text-white" /></div>
-            <span className="font-display text-xl font-bold text-navy-900">AI<span className="text-coral-600">ttorney</span></span>
+            <span className="font-display text-3xl font-bold text-navy-900">AI<span className="text-coral-600">ttorney</span></span>
           </div>
 
           <div className="mb-6 sm:mb-8">
@@ -164,13 +166,24 @@ const { data } = await authAPI.login(email.trim().toLowerCase(), password);
           </div>
 
           {/* Demo credentials — informational only, not a restriction */}
-          <div className="mb-6 p-4 rounded-xl bg-coral-50 border border-coral-100">
-            <p className="text-xs text-coral-700 font-semibold mb-1">Try the demo</p>
-            {/* <p className="font-mono text-xs text-coral-600">{DEMO_EMAIL}</p> */}
-
-            <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type demo email .</p>
-            {/* <p className="text-xs text-coral-400 mt-1">Password auto-fills when you type this email ↑ — or sign in with your own account.</p> */}
-          </div>
+<div className="mb-6 -mt-3 p-4 rounded-xl bg-coral-50 border border-coral-100">  <p className="text-xs text-coral-700 font-semibold mb-1">Try the demo</p>
+  <button
+    onClick={() => {
+      setEmail(DEMO_EMAIL);
+      setPassword(DEMO_PASSWORD);
+      setEmailError(false);
+      setPasswordError(false);
+    }}
+    className="font-mono text-xs text-coral-600 hover:text-coral-800
+               underline underline-offset-2 cursor-pointer transition-colors
+               text-left"
+  >
+    {DEMO_EMAIL}
+  </button>
+  <p className="text-xs text-coral-400 mt-1">
+    Click email above to autofill demo credentials ↑
+  </p>
+</div>
 
           <div className="space-y-4">
             <div>
@@ -179,7 +192,7 @@ const { data } = await authAPI.login(email.trim().toLowerCase(), password);
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                placeholder="you@example.com"
+                placeholder="gagan@example.com"
 className={`input transition-colors ${
     emailError ? "border-red-400 bg-red-50 focus:border-red-500" : ""
   }`}                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
