@@ -188,7 +188,7 @@ Contract text:
         from config import GROQ_CLIENT
         if GROQ_CLIENT:
             resp = GROQ_CLIENT.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=1500,
                 temperature=0.2,
