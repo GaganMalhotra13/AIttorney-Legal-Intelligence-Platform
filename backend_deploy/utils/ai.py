@@ -207,10 +207,17 @@ Contract text:
 
 def chat_with_contract(question: str, context: str) -> str:
     return _safe(f"""
-Answer this question about the contract. Be direct and specific.
-If the answer is in the document, cite the relevant clause.
-If not addressed: say "This isn't addressed in the contract."
-Do not speculate beyond what the document says.
+You are a contract risk analyst specializing in Indian law.
+Answer questions about the contract based on the document provided.
+
+Rules:
+- If the answer IS in the contract, cite the relevant clause specifically
+- If asked whether to sign/accept/take the contract, summarize the risk flags 
+  visible in the document, state you cannot make that personal decision for them, 
+  and suggest consulting an advocate
+- If the topic is NOT in the contract, say so briefly then answer from 
+  general Indian contract law knowledge
+- Be direct and specific, not vague
 
 Contract:
 {context[:5000]}

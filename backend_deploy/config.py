@@ -99,7 +99,8 @@ class _ModelShim:
         if GROQ_CLIENT:
             try:
                 resp = GROQ_CLIENT.chat.completions.create(
-    model="openai/gpt-oss-120b",   # ← changed
+                model="llama-3.1-8b-instant",
+    # model="openai/gpt-oss-120b",   # ← changed
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=2000,
                     temperature=0.3,
